@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 ﻿using System.ComponentModel.DataAnnotations;
+=======
+using System.ComponentModel.DataAnnotations;
+>>>>>>> 33c3fde4fc508e3f120288c3e2683a8b615d44dc
 
 namespace UserService.DTOs
 {
