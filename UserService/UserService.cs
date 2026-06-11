@@ -3,7 +3,6 @@ using Microsoft.ServiceFabric.Services.Communication.Runtime;
 
 using System;
 using System.Collections.Generic;
-using System.Fabric;
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -12,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
-using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using UserService.Data;
 using UserService.Services;
