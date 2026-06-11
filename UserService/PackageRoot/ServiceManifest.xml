@@ -11,7 +11,7 @@
   </ServiceTypes>
 
   <!-- Code package is your service executable. -->
-  <CodePackage Name="Code" Version="1.0.0">
+  <CodePackage Name="Code" Version="1.0.1">
     <EntryPoint>
       <ExeHost>
         <Program>UserService.exe</Program>

@@ -3,6 +3,10 @@ using TravelService.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ***** DODATO - PORT 5004 *****
+builder.WebHost.UseUrls("http://localhost:5004");
+// *****************************
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

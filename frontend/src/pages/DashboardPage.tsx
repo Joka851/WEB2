@@ -15,13 +15,21 @@ const DashboardPage: React.FC = () => {
     const fetchPlans = async () => {
       try {
         if (user) {
-          const data = isAdmin
-            ? await travelPlanService.getAll()
-            : await travelPlanService.getByUser(user.id);
+          let data: TravelPlan[];
+          
+          if (isAdmin) {
+            // Admin vidi sve planove
+            data = await travelPlanService.getAll();
+          } else {
+            // Običan korisnik vidi samo svoje planove (preko my-plans endpointa)
+            data = await travelPlanService.getMyPlans();
+          }
+          
           setPlans(data);
         }
       } catch (err) {
         setError('Failed to load travel plans.');
+        console.error(err);
       } finally {
         setLoading(false);
       }

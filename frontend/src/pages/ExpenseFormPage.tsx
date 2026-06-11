@@ -22,15 +22,12 @@ const ExpenseFormPage: React.FC = () => {
     if (isEdit) {
       const fetchExpense = async () => {
         try {
-          const expenses = await expenseService.getAll(parseInt(planId!));
-          const exp = expenses.find(e => e.id === parseInt(id!));
-          if (exp) {
-            setName(exp.name);
-            setCategory(exp.category);
-            setAmount(exp.amount);
-            setDate(exp.date.split('T')[0]);
-            setDescription(exp.description);
-          }
+          const expense = await expenseService.getById(parseInt(planId!), parseInt(id!));
+          setName(expense.name);
+          setCategory(expense.category);
+          setAmount(expense.amount);
+          setDate(expense.date.split('T')[0]);
+          setDescription(expense.description || '');
         } catch {
           setError('Failed to load expense.');
         }
@@ -57,8 +54,8 @@ const ExpenseFormPage: React.FC = () => {
         await expenseService.create(parseInt(planId!), data);
       }
       navigate(`/travel-plans/${planId}`);
-    } catch {
-      setError('Failed to save expense.');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to save expense.');
     } finally {
       setLoading(false);
     }
@@ -82,9 +79,9 @@ const ExpenseFormPage: React.FC = () => {
           </select>
         </div>
         <div style={{ marginBottom: '10px' }}>
-          <label>Amount ($):</label>
+          <label>Amount (€):</label>
           <input type="number" value={amount} onChange={e => setAmount(parseFloat(e.target.value))}
-            min="0" required style={{ width: '100%', padding: '8px' }} />
+            min="0" step="0.01" required style={{ width: '100%', padding: '8px' }} />
         </div>
         <div style={{ marginBottom: '10px' }}>
           <label>Date:</label>
@@ -94,7 +91,7 @@ const ExpenseFormPage: React.FC = () => {
         <div style={{ marginBottom: '10px' }}>
           <label>Description:</label>
           <textarea value={description} onChange={e => setDescription(e.target.value)}
-            style={{ width: '100%', padding: '8px' }} />
+            style={{ width: '100%', padding: '8px' }} rows={3} />
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button type="submit" disabled={loading} style={{ padding: '10px 20px' }}>

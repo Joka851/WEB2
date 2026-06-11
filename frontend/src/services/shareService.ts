@@ -19,16 +19,17 @@ export const shareService = {
 
   createToken: async (travelPlanId: number, data: CreateShareToken): Promise<ShareToken> => {
     const response = await axios.post(
-      `${API_URL}/api/travel-plans/${travelPlanId}/share`,
+      `${API_URL}/api/travel-plans/${travelPlanId}/share/generate`, // ISPRAVLJENO: /generate endpoint
       data,
       getHeaders()
     );
     return response.data;
   },
 
+  // ISPRAVLJENO: accessByToken bez hardkodovanog travelPlanId=0
   accessByToken: async (token: string): Promise<any> => {
     const response = await axios.get(
-      `${API_URL}/api/travel-plans/0/share/access/${token}`
+      `${API_URL}/api/share/access/${token}`  // ISPRAVLJENO: ispravan URL
     );
     return response.data;
   },

@@ -1,32 +1,19 @@
-using System;
-using System.Collections.Generic;
 using System.Fabric;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
-using Microsoft.ServiceFabric.Data;
+using System.Text;
 
 namespace Gateway
 {
-    /// <summary>
-    /// The FabricRuntime creates an instance of this class for each service type instance.
-    /// </summary>
     internal sealed class Gateway : StatelessService
     {
         public Gateway(StatelessServiceContext context)
             : base(context)
         { }
 
-        /// <summary>
-        /// Optional override to create listeners (like tcp, http) for this service instance.
-        /// </summary>
-        /// <returns>The collection of listeners.</returns>
         protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
         {
             return new ServiceInstanceListener[]
@@ -34,30 +21,60 @@ namespace Gateway
                 new ServiceInstanceListener(serviceContext =>
                     new KestrelCommunicationListener(serviceContext, "ServiceEndpoint", (url, listener) =>
                     {
-                        ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
-
                         var builder = WebApplication.CreateBuilder();
-
                         builder.Services.AddSingleton<StatelessServiceContext>(serviceContext);
                         builder.WebHost
-                                    .UseKestrel()
-                                    .UseContentRoot(Directory.GetCurrentDirectory())
-                                    .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
-                                    .UseUrls(url);
+                            .UseKestrel()
+                            .UseContentRoot(Directory.GetCurrentDirectory())
+                            .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
+                            .UseUrls(url);
+
                         builder.Services.AddControllers();
                         builder.Services.AddEndpointsApiExplorer();
                         builder.Services.AddSwaggerGen();
-                        var app = builder.Build();
-                        if (app.Environment.IsDevelopment())
+
+                        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                            .AddJwtBearer(options =>
+                            {
+                                options.TokenValidationParameters = new TokenValidationParameters
+                                {
+                                    ValidateIssuer = true,
+                                    ValidateAudience = true,
+                                    ValidateLifetime = true,
+                                    ValidateIssuerSigningKey = true,
+                                    ValidIssuer = "TravelPlanner",
+                                    ValidAudience = "TravelPlannerUsers",
+                                    IssuerSigningKey = new SymmetricSecurityKey(
+                                        Encoding.UTF8.GetBytes("TravelPlannerSuperSecretKey123!@#"))
+                                };
+                            });
+
+                        builder.Services.AddAuthorization();
+
+                        builder.Services.AddCors(options =>
                         {
+                            options.AddPolicy("AllowAll", policy =>
+                            {
+                                policy.AllowAnyOrigin()
+                                      .AllowAnyMethod()
+                                      .AllowAnyHeader();
+                            });
+                        });
+
+                        builder.Services.AddReverseProxy()
+                            .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+
+                        var app = builder.Build();
+
                         app.UseSwagger();
                         app.UseSwaggerUI();
-                        }
+                        app.UseCors("AllowAll");
+                        app.UseAuthentication();
                         app.UseAuthorization();
                         app.MapControllers();
-                        
-                        return app;
+                        app.MapReverseProxy();
 
+                        return app;
                     }))
             };
         }

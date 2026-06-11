@@ -7,6 +7,10 @@ using UserService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ***** DODATO - PORT 5001 *****
+builder.WebHost.UseUrls("http://localhost:5001");
+// *****************************
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

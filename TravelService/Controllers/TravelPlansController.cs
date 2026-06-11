@@ -78,6 +78,42 @@ namespace TravelService.Controllers
         }
 
         /// <summary>
+        /// Get all travel plans for the currently logged-in user
+        /// </summary>
+        [HttpGet("my-plans")]
+        public async Task<IActionResult> GetMyPlans()
+        {
+            try
+            {
+                var currentUserId = GetCurrentUserId();
+
+                var plans = await _context.TravelPlans
+                    .Where(t => t.UserId == currentUserId && !t.IsDeleted)
+                    .Select(t => new TravelPlanDto
+                    {
+                        Id = t.Id,
+                        UserId = t.UserId,
+                        Name = t.Name,
+                        Description = t.Description,
+                        StartDate = t.StartDate,
+                        EndDate = t.EndDate,
+                        Budget = t.Budget,
+                        Notes = t.Notes,
+                        CreatedAt = t.CreatedAt,
+                        UpdatedAt = t.UpdatedAt
+                    }).ToListAsync();
+
+                _logger.LogInformation($"User {currentUserId} retrieved their own travel plans");
+                return Ok(plans);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving user's travel plans");
+                return StatusCode(500, new { message = "Greška pri preuzimanju vaših putnih planova" });
+            }
+        }
+
+        /// <summary>
         /// Get travel plan by ID with details
         /// </summary>
         [HttpGet("{id}")]

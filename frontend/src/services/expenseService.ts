@@ -17,6 +17,15 @@ export const expenseService = {
     return response.data;
   },
 
+  // DODATO: getById metod
+  getById: async (travelPlanId: number, id: number): Promise<Expense> => {
+    const response = await axios.get(
+      `${API_URL}/api/travel-plans/${travelPlanId}/expenses/${id}`,
+      getHeaders()
+    );
+    return response.data;
+  },
+
   getSummary: async (travelPlanId: number): Promise<any> => {
     const response = await axios.get(
       `${API_URL}/api/travel-plans/${travelPlanId}/expenses/summary`,

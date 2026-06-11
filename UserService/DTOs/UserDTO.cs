@@ -24,6 +24,10 @@ namespace UserService.DTOs
 
         [Required]
         public bool IsActive { get; set; } = true;
+
+        // DODATO: IsDeleted polje
+        [Required]
+        public bool IsDeleted { get; set; } = false;
     }
 
     public class UpdateUserDto

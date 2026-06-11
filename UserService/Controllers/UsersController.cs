@@ -53,7 +53,8 @@ namespace UserService.Controllers
                         Role = u.Role,
                         CreatedAt = u.CreatedAt,
                         UpdatedAt = u.UpdatedAt,
-                        IsActive = u.IsActive
+                        IsActive = u.IsActive,
+                        IsDeleted = u.IsDeleted
                     }).ToListAsync();
 
                 _logger.LogInformation("Admin retrieved all users");
@@ -99,7 +100,8 @@ namespace UserService.Controllers
                     Role = user.Role,
                     CreatedAt = user.CreatedAt,
                     UpdatedAt = user.UpdatedAt,
-                    IsActive = user.IsActive
+                    IsActive = user.IsActive,
+                    IsDeleted = user.IsDeleted
                 });
             }
             catch (Exception ex)
@@ -163,7 +165,8 @@ namespace UserService.Controllers
                     Role = user.Role,
                     CreatedAt = user.CreatedAt,
                     UpdatedAt = user.UpdatedAt,
-                    IsActive = user.IsActive
+                    IsActive = user.IsActive,
+                    IsDeleted = user.IsDeleted
                 });
             }
             catch (Exception ex)
@@ -287,7 +290,8 @@ namespace UserService.Controllers
                     Role = user.Role,
                     CreatedAt = user.CreatedAt,
                     UpdatedAt = user.UpdatedAt,
-                    IsActive = user.IsActive
+                    IsActive = user.IsActive,
+                    IsDeleted = user.IsDeleted
                 });
             }
             catch (Exception ex)
@@ -298,7 +302,7 @@ namespace UserService.Controllers
         }
 
         /// <summary>
-        /// Activate/Deactivate user - Only Admin can do this
+        /// Activate/Deactivate user - Only Admin can do this (stari endpoint)
         /// </summary>
         [HttpPut("{id}/activate")]
         [Authorize(Roles = "Admin")]
@@ -327,13 +331,57 @@ namespace UserService.Controllers
                     Role = user.Role,
                     CreatedAt = user.CreatedAt,
                     UpdatedAt = user.UpdatedAt,
-                    IsActive = user.IsActive
+                    IsActive = user.IsActive,
+                    IsDeleted = user.IsDeleted
                 });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error toggling active status for user {id}");
                 return StatusCode(500, new { message = "Greška pri promenama statusa korisnika" });
+            }
+        }
+
+        // ========== DODATO: NOVI ENDPOINT ZA FRONTEND ==========
+        /// <summary>
+        /// Update user status (activate/deactivate) - Only Admin can do this
+        /// Ovo je endpoint koji frontend očekuje (PATCH /api/users/{id}/status)
+        /// </summary>
+        [HttpPatch("{id}/status")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateUserStatus(int id, [FromBody] UpdateUserStatusDto dto)
+        {
+            try
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
+                if (user == null)
+                {
+                    return NotFound(new { message = "Korisnik nije pronađen" });
+                }
+
+                user.IsActive = dto.IsActive;
+                user.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation($"Admin updated status for user {id} to active={dto.IsActive}");
+                return Ok(new UserDto
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Role = user.Role,
+                    CreatedAt = user.CreatedAt,
+                    UpdatedAt = user.UpdatedAt,
+                    IsActive = user.IsActive,
+                    IsDeleted = user.IsDeleted
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error updating user status for user {id}");
+                return StatusCode(500, new { message = "Greška pri promeni statusa korisnika" });
             }
         }
     }

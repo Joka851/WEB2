@@ -31,7 +31,9 @@ namespace UserService.Services
                 LastName = dto.LastName,
                 Email = dto.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                Role = "User"
+                Role = "User",
+                IsActive = true,
+                IsDeleted = false
             };
 
             _context.Users.Add(user);
@@ -51,8 +53,15 @@ namespace UserService.Services
         public async Task<string?> Login(LoginDto dto)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+
+            // Provjera: korisnik postoji, lozinka je ispravna, nije obrisan, aktivan je
+            if (user == null ||
+                !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash) ||
+                user.IsDeleted ||
+                !user.IsActive)
+            {
                 return null;
+            }
 
             return GenerateToken(user);
         }

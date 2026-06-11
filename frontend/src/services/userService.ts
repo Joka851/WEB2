@@ -36,5 +36,15 @@ export const userService = {
       }
     );
     return response.data;
+  },
+
+  // DODATO: updateUserStatus metoda
+  updateUserStatus: async (id: number, data: { isActive: boolean }): Promise<User> => {
+    const response = await axios.patch(
+      `${API_URL}/api/users/${id}/status`,
+      data,
+      getHeaders()
+    );
+    return response.data;
   }
 };

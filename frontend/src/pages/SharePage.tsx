@@ -4,13 +4,14 @@ import { shareService } from '../services/shareService';
 import { ShareToken } from '../models/ShareToken';
 import { QRCodeSVG } from 'qrcode.react';
 
-
 const SharePage: React.FC = () => {
   const { planId } = useParams<{ planId: string }>();
   const navigate = useNavigate();
   const [tokens, setTokens] = useState<ShareToken[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [accessType, setAccessType] = useState<'VIEW' | 'EDIT'>('VIEW');
+  const [expiresInDays, setExpiresInDays] = useState(7);
 
   useEffect(() => {
     const fetchTokens = async () => {
@@ -26,12 +27,16 @@ const SharePage: React.FC = () => {
     fetchTokens();
   }, [planId]);
 
-  const handleCreate = async (accessType: string) => {
+  const handleCreate = async () => {
     try {
-      const token = await shareService.createToken(parseInt(planId!), { accessType });
+      const token = await shareService.createToken(parseInt(planId!), { 
+        accessType, 
+        expiresInDays 
+      });
       setTokens([...tokens, token]);
-    } catch {
-      setError('Failed to create token.');
+      setError('');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to create token.');
     }
   };
 
@@ -52,12 +57,40 @@ const SharePage: React.FC = () => {
       <h2>Share Travel Plan</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-        <button onClick={() => handleCreate('View')} style={{ padding: '10px 20px' }}>
-          Create View Link
-        </button>
-        <button onClick={() => handleCreate('Edit')} style={{ padding: '10px 20px' }}>
-          Create Edit Link
+      <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
+        <h3>Generate New Share Link</h3>
+        
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Access Type</label>
+          <select
+            value={accessType}
+            onChange={(e) => setAccessType(e.target.value as 'VIEW' | 'EDIT')}
+            style={{ padding: '8px', width: '200px' }}
+          >
+            <option value="VIEW">View Only</option>
+            <option value="EDIT">Edit (requires login)</option>
+          </select>
+          <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+            {accessType === 'VIEW' 
+              ? 'Anyone with the link can view the plan (no login required).'
+              : 'User must be logged in to edit the plan.'}
+          </p>
+        </div>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Expires In (days)</label>
+          <input
+            type="number"
+            value={expiresInDays}
+            onChange={(e) => setExpiresInDays(parseInt(e.target.value) || 7)}
+            min={1}
+            max={365}
+            style={{ padding: '8px', width: '200px' }}
+          />
+        </div>
+
+        <button onClick={handleCreate} style={{ padding: '10px 20px' }}>
+          Generate Share Link
         </button>
       </div>
 
@@ -65,8 +98,8 @@ const SharePage: React.FC = () => {
 
       {tokens.map(token => (
         <div key={token.id} style={{ border: '1px solid #ccc', padding: '15px', marginBottom: '15px', borderRadius: '8px' }}>
-          <h4>Access Type: {token.accessType}</h4>
-          <p><strong>Expires:</strong> {new Date(token.expiresAt).toLocaleDateString()}</p>
+          <h4>Access Type: <span style={{ color: token.accessType === 'EDIT' ? 'orange' : 'green' }}>{token.accessType}</span></h4>
+          <p><strong>Expires:</strong> {new Date(token.expiresAt).toLocaleString()}</p>
           <p><strong>Link:</strong> <a href={getShareUrl(token.token)} target="_blank" rel="noreferrer">{getShareUrl(token.token)}</a></p>
           <div style={{ margin: '10px 0' }}>
             <QRCodeSVG value={getShareUrl(token.token)} size={128} />
@@ -74,6 +107,10 @@ const SharePage: React.FC = () => {
           <button onClick={() => handleDelete(token.id)} style={{ color: 'red' }}>Delete</button>
         </div>
       ))}
+
+      {!loading && tokens.length === 0 && (
+        <p>No share links created yet. Generate one above.</p>
+      )}
     </div>
   );
 };

@@ -19,6 +19,13 @@ export const travelPlanService = {
     return response.data;
   },
 
+  // NOVI METOD za obične korisnike (umjesto getByUser)
+  getMyPlans: async (): Promise<TravelPlan[]> => {
+    const response = await axios.get(`${API_URL}/api/travel-plans/my-plans`, getHeaders());
+    return response.data;
+  },
+
+  // Ovo ostaje SAMO ZA ADMINA (ne koristi se u DashboardPage za obične korisnike)
   getByUser: async (userId: number): Promise<TravelPlan[]> => {
     const response = await axios.get(`${API_URL}/api/travel-plans/user/${userId}`, getHeaders());
     return response.data;

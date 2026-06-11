@@ -5,7 +5,7 @@ import { User } from '../models/User';
 import { userService } from '../services/userService';
 
 const AdminPage: React.FC = () => {
-  const { isAdmin, logout } = useAuth();
+  const { isAdmin, logout, user: currentUser } = useAuth();
   const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ const AdminPage: React.FC = () => {
   }, [isAdmin, navigate]);
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
+    if (window.confirm('Are you sure you want to delete this user? This will delete all their travel plans.')) {
       try {
         await userService.delete(id);
         setUsers(users.filter(u => u.id !== id));
@@ -46,6 +46,16 @@ const AdminPage: React.FC = () => {
       setUsers(users.map(u => u.id === id ? updated : u));
     } catch {
       setError('Failed to update role.');
+    }
+  };
+
+  const handleToggleActive = async (id: number, currentStatus: boolean) => {
+    try {
+      await userService.updateUserStatus(id, { isActive: !currentStatus });
+      const data = await userService.getAll();
+      setUsers(data);
+    } catch {
+      setError('Failed to update user status.');
     }
   };
 
@@ -70,6 +80,7 @@ const AdminPage: React.FC = () => {
             <th style={{ padding: '10px', border: '1px solid #ccc' }}>Name</th>
             <th style={{ padding: '10px', border: '1px solid #ccc' }}>Email</th>
             <th style={{ padding: '10px', border: '1px solid #ccc' }}>Role</th>
+            <th style={{ padding: '10px', border: '1px solid #ccc' }}>Status</th>
             <th style={{ padding: '10px', border: '1px solid #ccc' }}>Actions</th>
           </tr>
         </thead>
@@ -80,13 +91,40 @@ const AdminPage: React.FC = () => {
               <td style={{ padding: '10px', border: '1px solid #ccc' }}>{user.firstName} {user.lastName}</td>
               <td style={{ padding: '10px', border: '1px solid #ccc' }}>{user.email}</td>
               <td style={{ padding: '10px', border: '1px solid #ccc' }}>
-                <select value={user.role} onChange={e => handleRoleChange(user.id, e.target.value)}>
+                <select 
+                  value={user.role} 
+                  onChange={e => handleRoleChange(user.id, e.target.value)}
+                  disabled={user.id === currentUser?.id}
+                >
                   <option value="User">User</option>
                   <option value="Admin">Admin</option>
                 </select>
               </td>
               <td style={{ padding: '10px', border: '1px solid #ccc' }}>
-                <button onClick={() => handleDelete(user.id)} style={{ color: 'red' }}>Delete</button>
+                <span style={{ color: user.isActive && !user.isDeleted ? 'green' : 'red' }}>
+                  {user.isDeleted ? 'Deleted' : (user.isActive ? 'Active' : 'Inactive')}
+                </span>
+              </td>
+              <td style={{ padding: '10px', border: '1px solid #ccc' }}>
+                {!user.isDeleted && (
+                  <button
+                    onClick={() => handleToggleActive(user.id, user.isActive)}
+                    style={{ 
+                      marginRight: '5px', 
+                      backgroundColor: user.isActive ? 'orange' : 'green', 
+                      color: 'white' 
+                    }}
+                  >
+                    {user.isActive ? 'Deactivate' : 'Activate'}
+                  </button>
+                )}
+                <button 
+                  onClick={() => handleDelete(user.id)} 
+                  style={{ color: 'red' }}
+                  disabled={user.id === currentUser?.id}
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
