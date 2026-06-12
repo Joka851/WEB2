@@ -4,11 +4,11 @@ export interface ShareToken {
   token: string;
   accessType: string;
   expiresAt: string;
-  createdAt?: string;    // OPCIONALNO
-  isDeleted?: boolean;   // OPCIONALNO
+  createdAt?: string;
+  isDeleted?: boolean;
 }
 
 export interface CreateShareToken {
   accessType: string;
-  expiresInDays?: number;  // DODATO - opciono, backend ce koristiti default ako nije poslato
+  expiresAt: string; // ISO date string - matches backend CreateShareTokenDto.ExpiresAt
 }

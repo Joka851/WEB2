@@ -29,11 +29,18 @@ const SharePage: React.FC = () => {
 
   const handleCreate = async () => {
     try {
-      const token = await shareService.createToken(parseInt(planId!), { 
-        accessType, 
-        expiresInDays 
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+
+      await shareService.createToken(parseInt(planId!), {
+        accessType,
+        expiresAt: expiresAt.toISOString()
       });
-      setTokens([...tokens, token]);
+
+      // Refetch full token list - the create endpoint returns a different
+      // shape (ShareTokenResponseDto) than the list endpoint (ShareTokenDto)
+      const data = await shareService.getTokens(parseInt(planId!));
+      setTokens(data);
       setError('');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to create token.');

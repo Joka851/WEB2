@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
@@ -32,20 +33,45 @@ namespace TravelService
                     {
                         ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
 
-                        var builder = WebApplication.CreateBuilder();
+                        // Postavi trenutni direktorijum
+                        var currentDirectory = Directory.GetCurrentDirectory();
+                        
+                        // Učitaj konfiguraciju iz appsettings.json
+                        var configuration = new ConfigurationBuilder()
+                            .SetBasePath(currentDirectory)
+                            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                            .AddEnvironmentVariables()
+                            .Build();
+
+                        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+                        {
+                            ContentRootPath = currentDirectory,
+                            WebRootPath = Path.Combine(currentDirectory, "wwwroot")
+                        });
 
                         builder.Services.AddSingleton<StatefulServiceContext>(serviceContext);
+                        builder.Services.AddSingleton<IConfiguration>(configuration);
+
                         builder.WebHost
                             .UseKestrel()
-                            .UseContentRoot(Directory.GetCurrentDirectory())
+                            .UseContentRoot(currentDirectory)
                             .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
                             .UseUrls(url);
 
                         // ---- DbContext ----
+                        var connectionString = configuration.GetConnectionString("TravelDB");
+                        ServiceEventSource.Current.ServiceMessage(serviceContext, $"Connection string: {connectionString}");
+
                         builder.Services.AddDbContext<TravelDbContext>(options =>
-                            options.UseSqlServer(builder.Configuration.GetConnectionString("TravelDB")));
+                            options.UseSqlServer(connectionString));
 
                         // ---- JWT Authentication ----
+                        var jwtKey = configuration["Jwt:Key"];
+                        var jwtIssuer = configuration["Jwt:Issuer"];
+                        var jwtAudience = configuration["Jwt:Audience"];
+
+                        ServiceEventSource.Current.ServiceMessage(serviceContext, $"JWT Issuer: {jwtIssuer}");
+
                         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                             .AddJwtBearer(options =>
                             {
@@ -55,10 +81,10 @@ namespace TravelService
                                     ValidateAudience = true,
                                     ValidateLifetime = true,
                                     ValidateIssuerSigningKey = true,
-                                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                                    ValidIssuer = jwtIssuer,
+                                    ValidAudience = jwtAudience,
                                     IssuerSigningKey = new SymmetricSecurityKey(
-                                        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+                                        Encoding.UTF8.GetBytes(jwtKey ?? "TravelPlannerSuperSecretKey123!@#"))
                                 };
                             });
 
@@ -92,13 +118,24 @@ namespace TravelService
                         app.UseAuthorization();
                         app.MapControllers();
 
-                        // Kreiraj bazu ako ne postoji
+                        // Kreiraj bazu ako ne postoji (pokreni migracije)
                         using (var scope = app.Services.CreateScope())
                         {
                             var dbContext = scope.ServiceProvider.GetRequiredService<TravelDbContext>();
-                            dbContext.Database.EnsureCreated();
+                            try
+                            {
+                                // Ovo će kreirati bazu ako ne postoji
+                                dbContext.Database.EnsureCreated();
+                                ServiceEventSource.Current.ServiceMessage(serviceContext, "Database ensured created successfully");
+                            }
+                            catch (Exception ex)
+                            {
+                                ServiceEventSource.Current.ServiceMessage(serviceContext, $"Database error: {ex.Message}");
+                                throw;
+                            }
                         }
 
+                        ServiceEventSource.Current.ServiceMessage(serviceContext, "Kestrel started successfully");
                         return app;
                     }))
             };
@@ -115,7 +152,7 @@ namespace TravelService
 
                 ServiceEventSource.Current.ServiceMessage(Context, $"TravelService is running... Count: {++counter}");
 
-                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+                await Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
             }
         }
     }

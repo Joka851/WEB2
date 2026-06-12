@@ -8,6 +8,9 @@ export interface TravelPlan {
   budget: number;
   notes: string;
   createdAt: string;
+  destinations?: any[];
+  activities?: any[];
+  checklistItems?: any[];
 }
 
 export interface CreateTravelPlan {

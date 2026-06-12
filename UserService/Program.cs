@@ -1,67 +1,29 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using UserService.Data;
-using UserService.Services;
+using System;
+using System.Diagnostics;
+using System.Fabric;
+using System.Threading;
+using Microsoft.ServiceFabric.Services.Runtime;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// ***** DODATO - PORT 5001 *****
-builder.WebHost.UseUrls("http://localhost:5001");
-// *****************************
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.AddDbContext<UserDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("UserDB")));
-
-builder.Services.AddScoped<IAuthService, AuthService>();
-
-// Add Authentication - JWT Bearer
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+namespace UserService
+{
+    internal static class Program
     {
-        options.TokenValidationParameters = new TokenValidationParameters
+        private static void Main()
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
-        };
-    });
+            try
+            {
+                ServiceRuntime.RegisterServiceAsync("UserServiceType",
+                    context => new UserService(context)).GetAwaiter().GetResult();
 
-// Add Authorization
-builder.Services.AddAuthorization();
+                ServiceEventSource.Current.ServiceTypeRegistered(Process.GetCurrentProcess().Id, typeof(UserService).Name);
 
-// Add CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
-
-var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+                Thread.Sleep(Timeout.Infinite);
+            }
+            catch (Exception e)
+            {
+                ServiceEventSource.Current.ServiceHostInitializationFailed(e.ToString());
+                throw;
+            }
+        }
+    }
 }
-
-app.UseCors("AllowAll");
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-app.Run();

@@ -1,27 +1,29 @@
-using Microsoft.EntityFrameworkCore;
-using TravelService.Data;
+using System;
+using System.Diagnostics;
+using System.Fabric;
+using System.Threading;
+using Microsoft.ServiceFabric.Services.Runtime;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// ***** DODATO - PORT 5004 *****
-builder.WebHost.UseUrls("http://localhost:5004");
-// *****************************
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.AddDbContext<TravelDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("TravelDB")));
-
-var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
+namespace TravelService
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    internal static class Program
+    {
+        private static void Main()
+        {
+            try
+            {
+                ServiceRuntime.RegisterServiceAsync("TravelServiceType",
+                    context => new TravelService(context)).GetAwaiter().GetResult();
 
-app.UseAuthorization();
-app.MapControllers();
-app.Run();
+                ServiceEventSource.Current.ServiceTypeRegistered(Process.GetCurrentProcess().Id, typeof(TravelService).Name);
+
+                Thread.Sleep(Timeout.Infinite);
+            }
+            catch (Exception e)
+            {
+                ServiceEventSource.Current.ServiceHostInitializationFailed(e.ToString());
+                throw;
+            }
+        }
+    }
+}
