@@ -16,7 +16,12 @@ const LoginPage: React.FC = () => {
     setLoading(true);
     try {
       await login({ email, password });
-      navigate('/dashboard');
+      const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
+      if (savedUser?.role === 'Admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError('Invalid email or password.');
     } finally {

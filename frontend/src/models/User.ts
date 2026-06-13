@@ -5,8 +5,8 @@ export interface User {
   email: string;
   role: string;
   createdAt: string;
-  isActive: boolean;    // DODATO
-  isDeleted: boolean;   // DODATO
+  isActive: boolean;    
+  isDeleted: boolean;   
 }
 
 export interface RegisterRequest {

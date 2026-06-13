@@ -19,7 +19,6 @@ export const travelPlanService = {
     return response.data;
   },
 
-  // NOVI METOD za obične korisnike (umjesto getByUser)
   getMyPlans: async (): Promise<TravelPlan[]> => {
     const response = await axios.get(`${API_URL}/api/travel-plans/my-plans`, getHeaders());
     return response.data;

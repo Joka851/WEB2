@@ -54,7 +54,6 @@ namespace UserService.Services
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
 
-            // Provjera: korisnik postoji, lozinka je ispravna, nije obrisan, aktivan je
             if (user == null ||
                 !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash) ||
                 user.IsDeleted ||

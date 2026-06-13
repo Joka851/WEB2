@@ -26,19 +26,12 @@ export const userService = {
   updateRole: async (id: number, role: string): Promise<User> => {
     const response = await axios.put(
       `${API_URL}/api/users/${id}/role`,
-      JSON.stringify(role),
-      {
-        ...getHeaders(),
-        headers: {
-          ...getHeaders().headers,
-          'Content-Type': 'application/json'
-        }
-      }
+      { role: role },
+      getHeaders()
     );
     return response.data;
   },
 
-  // DODATO: updateUserStatus metoda
   updateUserStatus: async (id: number, data: { isActive: boolean }): Promise<User> => {
     const response = await axios.patch(
       `${API_URL}/api/users/${id}/status`,

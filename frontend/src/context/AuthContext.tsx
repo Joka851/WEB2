@@ -33,7 +33,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { token } = response;
     authService.saveToken(token);
     setToken(token);
-
     const payload = JSON.parse(atob(token.split('.')[1]));
     const userId = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
     const userData = await userService.getById(parseInt(userId));
@@ -50,6 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     setToken(null);
     localStorage.removeItem('user');
+    window.location.href = '/login';
   };
 
   return (

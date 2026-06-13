@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { expenseService } from '../services/expenseService';
 import { CreateExpense } from '../models/Expense';
 
-const CATEGORIES = ['Transport', 'Accommodation', 'Food', 'Tickets', 'Shopping', 'Other'];
+const CATEGORIES = ['Transport', 'Accommodation', 'Food', 'Activities', 'Shopping', 'Insurance', 'Other'];
 
 const ExpenseFormPage: React.FC = () => {
   const { planId, id } = useParams<{ planId: string; id: string }>();

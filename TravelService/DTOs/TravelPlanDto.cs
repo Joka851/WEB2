@@ -38,7 +38,7 @@ namespace TravelService.DTOs
         [StringLength(2000, ErrorMessage = "Napomene mogu biti maksimalno 2000 karaktera")]
         public string Notes { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "ID korisnika je obavezan")]
+       
         public int UserId { get; set; }
     }
 

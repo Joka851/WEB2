@@ -33,10 +33,8 @@ namespace TravelService
                     {
                         ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
 
-                        // Postavi trenutni direktorijum
                         var currentDirectory = Directory.GetCurrentDirectory();
-                        
-                        // Učitaj konfiguraciju iz appsettings.json
+
                         var configuration = new ConfigurationBuilder()
                             .SetBasePath(currentDirectory)
                             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -52,11 +50,18 @@ namespace TravelService
                         builder.Services.AddSingleton<StatefulServiceContext>(serviceContext);
                         builder.Services.AddSingleton<IConfiguration>(configuration);
 
+                        // ---- Endpoint port ----
+                        var endpoint = serviceContext.CodePackageActivationContext.GetEndpoint("ServiceEndpoint");
+
+                        File.AppendAllText(@"C:\SfDebug\travelservice.log",
+                            $"[{DateTime.Now}] Binding via ConfigureKestrel to port {endpoint.Port}\n");
+
                         builder.WebHost
-                            .UseKestrel()
-                            .UseContentRoot(currentDirectory)
-                            .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
-                            .UseUrls(url);
+                            .UseKestrel(options =>
+                            {
+                                options.ListenAnyIP(endpoint.Port);
+                            })
+                            .UseContentRoot(currentDirectory);
 
                         // ---- DbContext ----
                         var connectionString = configuration.GetConnectionString("TravelDB");
@@ -118,13 +123,12 @@ namespace TravelService
                         app.UseAuthorization();
                         app.MapControllers();
 
-                        // Kreiraj bazu ako ne postoji (pokreni migracije)
+                        // Kreiraj bazu ako ne postoji
                         using (var scope = app.Services.CreateScope())
                         {
                             var dbContext = scope.ServiceProvider.GetRequiredService<TravelDbContext>();
                             try
                             {
-                                // Ovo će kreirati bazu ako ne postoji
                                 dbContext.Database.EnsureCreated();
                                 ServiceEventSource.Current.ServiceMessage(serviceContext, "Database ensured created successfully");
                             }

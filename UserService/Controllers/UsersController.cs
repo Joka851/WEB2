@@ -342,7 +342,7 @@ namespace UserService.Controllers
             }
         }
 
-        // ========== DODATO: NOVI ENDPOINT ZA FRONTEND ==========
+       
         /// <summary>
         /// Update user status (activate/deactivate) - Only Admin can do this
         /// Ovo je endpoint koji frontend očekuje (PATCH /api/users/{id}/status)
