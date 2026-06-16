@@ -55,13 +55,6 @@ Build -> Rebuild Solution
 Build -> Deploy Solution
 
 
-### 4. Provjera da servisi rade
-
-```powershell
-netstat -ano | findstr "8360\|8625\|8640\|8700"
-```
-
-Svi portovi trebaju biti u statusu LISTENING.
 
 ### 5. Kreiranje admin korisnika
 

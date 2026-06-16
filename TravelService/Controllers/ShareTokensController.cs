@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using TravelService.Data;
 using TravelService.Models;
+using TravelService.DTOs;
 
 namespace TravelService.Controllers
 {
@@ -109,9 +110,4 @@ namespace TravelService.Controllers
         }
     }
 
-    public class CreateShareTokenDto
-    {
-        public string AccessType { get; set; } = "VIEW";
-        public DateTime ExpiresAt { get; set; }
-    }
 }
