@@ -41,7 +41,7 @@ namespace FinanceService.Controllers
         {
             try
             {
-                // TODO: Add authorization check with TravelService
+                // Add authorization check with TravelService
                 var expenses = await _context.Expenses
                     .Where(e => e.TravelPlanId == travelPlanId && !e.IsDeleted)
                     .OrderByDescending(e => e.Date)

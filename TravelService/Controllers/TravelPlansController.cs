@@ -354,7 +354,7 @@ namespace TravelService.Controllers
 
         /// <summary>
         /// Delete travel plan (soft delete) - Owner or Admin only
-        /// All related entities are also soft deleted
+      
         /// </summary>
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)

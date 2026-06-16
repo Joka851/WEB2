@@ -13,7 +13,6 @@
 		<Parameter Name="TravelService_TargetReplicaSetSize" DefaultValue="1" />
 		<Parameter Name="TravelService_PartitionCount" DefaultValue="1" />
 	</Parameters>
-
 	<ServiceManifestImport>
 		<ServiceManifestRef ServiceManifestName="FinanceServicePkg" ServiceManifestVersion="1.0.0" />
 		<ConfigOverrides />
@@ -21,7 +20,6 @@
 			<EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[FinanceService_ASPNETCORE_ENVIRONMENT]" />
 		</EnvironmentOverrides>
 	</ServiceManifestImport>
-
 	<ServiceManifestImport>
 		<ServiceManifestRef ServiceManifestName="TravelServicePkg" ServiceManifestVersion="1.0.1" />
 		<ConfigOverrides />
@@ -29,7 +27,6 @@
 			<EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[TravelService_ASPNETCORE_ENVIRONMENT]" />
 		</EnvironmentOverrides>
 	</ServiceManifestImport>
-
 	<ServiceManifestImport>
 		<ServiceManifestRef ServiceManifestName="UserServicePkg" ServiceManifestVersion="1.0.0" />
 		<ConfigOverrides />
@@ -37,7 +34,6 @@
 			<EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[UserService_ASPNETCORE_ENVIRONMENT]" />
 		</EnvironmentOverrides>
 	</ServiceManifestImport>
-
 	<ServiceManifestImport>
 		<ServiceManifestRef ServiceManifestName="GatewayPkg" ServiceManifestVersion="1.0.0" />
 		<ConfigOverrides />
@@ -45,36 +41,28 @@
 			<EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[Gateway_ASPNETCORE_ENVIRONMENT]" />
 		</EnvironmentOverrides>
 	</ServiceManifestImport>
-
-	
 	<DefaultServices>
 		<Service Name="Gateway">
 			<StatelessService ServiceTypeName="GatewayType" InstanceCount="1">
 				<SingletonPartition />
 			</StatelessService>
 		</Service>
-
 		<Service Name="UserService">
 			<StatelessService ServiceTypeName="UserServiceType" InstanceCount="1">
 				<SingletonPartition />
 			</StatelessService>
 		</Service>
-
 		<Service Name="FinanceService">
 			<StatelessService ServiceTypeName="FinanceServiceType" InstanceCount="1">
 				<SingletonPartition />
 			</StatelessService>
 		</Service>
-
 		<Service Name="TravelService">
 			<StatefulService ServiceTypeName="TravelServiceType"
-			                 TargetReplicaSetSize="[TravelService_TargetReplicaSetSize]"
-			                 MinReplicaSetSize="[TravelService_MinReplicaSetSize]">
-				<UniformInt64Partition PartitionCount="[TravelService_PartitionCount]"
-				                       LowKey="-9223372036854775808"
-				                       HighKey="9223372036854775807" />
+			                  TargetReplicaSetSize="[TravelService_TargetReplicaSetSize]"
+			                  MinReplicaSetSize="[TravelService_MinReplicaSetSize]">
+				<UniformInt64Partition PartitionCount="[TravelService_PartitionCount]" LowKey="0" HighKey="9" />
 			</StatefulService>
 		</Service>
 	</DefaultServices>
-
 </ApplicationManifest>
