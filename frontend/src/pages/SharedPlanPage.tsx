@@ -57,10 +57,7 @@ const SharedPlanPage: React.FC = () => {
 
       {canEdit && (
         <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#fff3cd', borderRadius: '8px' }}>
-          <strong>Edit mode:</strong> You can edit this plan.{' '}
-          <button onClick={() => navigate(`/travel-plans/${planId}`)}>
-            Open Full Edit View
-          </button>
+          <strong>Edit mode:</strong> You can edit this plan.
         </div>
       )}
 
@@ -74,17 +71,18 @@ const SharedPlanPage: React.FC = () => {
               <p>{new Date(d.arrivalDate).toLocaleDateString()} - {new Date(d.departureDate).toLocaleDateString()}</p>
               {d.description && <p>{d.description}</p>}
               {canEdit && (
-                <button onClick={() => navigate(`/travel-plans/${planId}/destinations/${d.id}/edit`)}>
+                <button
+                  onClick={() =>
+                    navigate(`/travel-plans/${planId}/destinations/${d.id}/edit`, {
+                      state: { returnTo: `/shared/${token}` }
+                    })
+                  }
+                >
                   Edit
                 </button>
               )}
             </div>
           ))}
-          {canEdit && (
-            <button onClick={() => navigate(`/travel-plans/${planId}/destinations/create`)}>
-              + Add Destination
-            </button>
-          )}
         </div>
       )}
 
@@ -102,17 +100,18 @@ const SharedPlanPage: React.FC = () => {
                 {a.description && <p>{a.description}</p>}
                 <p><strong>Cost:</strong> ${a.estimatedCost} | <strong>Status:</strong> {a.status}</p>
                 {canEdit && (
-                  <button onClick={() => navigate(`/travel-plans/${planId}/activities/${a.id}/edit`)}>
+                  <button
+                    onClick={() =>
+                      navigate(`/travel-plans/${planId}/activities/${a.id}/edit`, {
+                        state: { returnTo: `/shared/${token}` }
+                      })
+                    }
+                  >
                     Edit
                   </button>
                 )}
               </div>
             ))}
-          {canEdit && (
-            <button onClick={() => navigate(`/travel-plans/${planId}/activities/create`)}>
-              + Add Activity
-            </button>
-          )}
         </div>
       )}
 

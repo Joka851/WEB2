@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { activityService } from '../services/activityService';
 import { CreateActivity } from '../models/Activity';
 
 const ActivityFormPage: React.FC = () => {
   const { planId, id } = useParams<{ planId: string; id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const isEdit = !!id;
+
+  const returnTo = (location.state as { returnTo?: string } | null)?.returnTo;
+  const goBack = () => navigate(returnTo || `/travel-plans/${planId}`);
 
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [location, setLocation] = useState('');
+  const [location_, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [estimatedCost, setEstimatedCost] = useState(0);
   const [status, setStatus] = useState('Planned');
@@ -47,7 +51,7 @@ const ActivityFormPage: React.FC = () => {
     setLoading(true);
     try {
       const data: CreateActivity = {
-        name, date, time, location, description, estimatedCost, status
+        name, date, time, location: location_, description, estimatedCost, status
       };
 
       if (isEdit) {
@@ -55,7 +59,7 @@ const ActivityFormPage: React.FC = () => {
       } else {
         await activityService.create(parseInt(planId!), data);
       }
-      navigate(`/travel-plans/${planId}`);
+      goBack();
     } catch {
       setError('Failed to save activity.');
     } finally {
@@ -85,7 +89,7 @@ const ActivityFormPage: React.FC = () => {
         </div>
         <div style={{ marginBottom: '10px' }}>
           <label>Location:</label>
-          <input type="text" value={location} onChange={e => setLocation(e.target.value)}
+          <input type="text" value={location_} onChange={e => setLocation(e.target.value)}
             style={{ width: '100%', padding: '8px' }} />
         </div>
         <div style={{ marginBottom: '10px' }}>
@@ -113,8 +117,7 @@ const ActivityFormPage: React.FC = () => {
           <button type="submit" disabled={loading} style={{ padding: '10px 20px' }}>
             {loading ? 'Saving...' : isEdit ? 'Update' : 'Add'}
           </button>
-          <button type="button" onClick={() => navigate(`/travel-plans/${planId}`)}
-            style={{ padding: '10px 20px' }}>Cancel</button>
+          <button type="button" onClick={goBack} style={{ padding: '10px 20px' }}>Cancel</button>
         </div>
       </form>
     </div>
