@@ -15,11 +15,19 @@ namespace UserService.Controllers
     {
         private readonly UserDbContext _context;
         private readonly ILogger<UsersController> _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public UsersController(UserDbContext context, ILogger<UsersController> logger)
+        public UsersController(
+            UserDbContext context,
+            ILogger<UsersController> logger,
+            IHttpClientFactory httpClientFactory,
+            IConfiguration configuration)
         {
             _context = context;
             _logger = logger;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         private int GetCurrentUserId()
@@ -31,6 +39,40 @@ namespace UserService.Controllers
         private string GetCurrentUserRole()
         {
             return User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
+        }
+
+        /// <summary>
+        /// Poziva TravelService da obriše (soft delete) sve putne planove datog korisnika,
+        /// zajedno sa svim povezanim entitetima (destinacije, aktivnosti, checklist, troškovi).
+        /// Ovo je server-to-server poziv, zaštićen internim API ključem, ne prolazi kroz Gateway.
+        /// Greška u TravelService ne sme da spreči brisanje samog korisnika - samo se loguje.
+        /// </summary>
+        private async Task DeleteTravelPlansForUser(int userId)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("TravelService");
+                var internalKey = _configuration["Internal:ApiKey"];
+                var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/internal/users/{userId}/travel-plans");
+                request.Headers.Add("X-Internal-Api-Key", internalKey);
+
+                var response = await client.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning(
+                        "TravelService je vratio {StatusCode} pri cascade brisanju planova za korisnika {UserId}",
+                        response.StatusCode, userId);
+                }
+                else
+                {
+                    _logger.LogInformation("Cascade: TravelService obrisao planove za korisnika {UserId}", userId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Greška pri pozivanju TravelService za cascade brisanje planova korisnika {UserId}", userId);
+            }
         }
 
         /// <summary>
@@ -245,6 +287,9 @@ namespace UserService.Controllers
 
                 await _context.SaveChangesAsync();
 
+                // Cascade delete: obriši i sve putne planove ovog korisnika u TravelService
+                await DeleteTravelPlansForUser(id);
+
                 _logger.LogInformation($"Admin deleted user {id} (soft delete)");
                 return Ok(new { message = "Korisnik je uspešno obrisan" });
             }
@@ -255,10 +300,54 @@ namespace UserService.Controllers
             }
         }
 
-       
+        /// <summary>
+        /// Update user role - Only Admin can do this
+        /// </summary>
+        [HttpPut("{id}/role")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateRole(int id, [FromBody] UpdateRoleDto dto)
+        {
+            try
+            {
+                if (!new[] { "User", "Admin" }.Contains(dto.Role))
+                {
+                    return BadRequest(new { message = "Uloga mora biti 'User' ili 'Admin'" });
+                }
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
+                if (user == null)
+                {
+                    return NotFound(new { message = "Korisnik nije pronađen" });
+                }
+
+                user.Role = dto.Role;
+                user.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation($"Admin updated role for user {id} to {dto.Role}");
+                return Ok(new UserDto
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Role = user.Role,
+                    CreatedAt = user.CreatedAt,
+                    UpdatedAt = user.UpdatedAt,
+                    IsActive = user.IsActive,
+                    IsDeleted = user.IsDeleted
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error updating role for user {id}");
+                return StatusCode(500, new { message = "Greška pri ažuriranju uloge" });
+            }
+        }
 
         /// <summary>
-        /// Activate/Deactivate user - Only Admin can do this
+        /// Activate/Deactivate user - Only Admin can do this (stari endpoint)
         /// </summary>
         [HttpPut("{id}/activate")]
         [Authorize(Roles = "Admin")]
@@ -298,7 +387,7 @@ namespace UserService.Controllers
             }
         }
 
-       
+
         /// <summary>
         /// Update user status (activate/deactivate) - Only Admin can do this
         /// Ovo je endpoint koji frontend očekuje (PATCH /api/users/{id}/status)

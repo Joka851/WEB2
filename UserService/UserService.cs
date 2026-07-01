@@ -83,6 +83,16 @@ namespace UserService
 
                         builder.Services.AddAuthorization();
 
+                        // ---- HttpClient za komunikaciju sa TravelService (cascade delete) ----
+                        builder.Services.AddHttpClient("TravelService", client =>
+                        {
+                            var travelUrl = configuration["ServiceUrls:TravelService"];
+                            if (!string.IsNullOrEmpty(travelUrl))
+                            {
+                                client.BaseAddress = new Uri(travelUrl);
+                            }
+                        });
+
                         // ---- CORS ----
                         builder.Services.AddCors(options =>
                         {
