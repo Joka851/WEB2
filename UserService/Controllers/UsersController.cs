@@ -255,54 +255,10 @@ namespace UserService.Controllers
             }
         }
 
-        /// <summary>
-        /// Update user role - Only Admin can do this
-        /// </summary>
-        [HttpPut("{id}/role")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateRole(int id, [FromBody] UpdateRoleDto dto)
-        {
-            try
-            {
-                if (!new[] { "User", "Admin" }.Contains(dto.Role))
-                {
-                    return BadRequest(new { message = "Uloga mora biti 'User' ili 'Admin'" });
-                }
-
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
-                if (user == null)
-                {
-                    return NotFound(new { message = "Korisnik nije pronađen" });
-                }
-
-                user.Role = dto.Role;
-                user.UpdatedAt = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation($"Admin updated role for user {id} to {dto.Role}");
-                return Ok(new UserDto
-                {
-                    Id = user.Id,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Email = user.Email,
-                    Role = user.Role,
-                    CreatedAt = user.CreatedAt,
-                    UpdatedAt = user.UpdatedAt,
-                    IsActive = user.IsActive,
-                    IsDeleted = user.IsDeleted
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error updating role for user {id}");
-                return StatusCode(500, new { message = "Greška pri ažuriranju uloge" });
-            }
-        }
+       
 
         /// <summary>
-        /// Activate/Deactivate user - Only Admin can do this (stari endpoint)
+        /// Activate/Deactivate user - Only Admin can do this
         /// </summary>
         [HttpPut("{id}/activate")]
         [Authorize(Roles = "Admin")]
