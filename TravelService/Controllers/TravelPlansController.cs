@@ -15,11 +15,19 @@ namespace TravelService.Controllers
     {
         private readonly TravelDbContext _context;
         private readonly ILogger<TravelPlansController> _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public TravelPlansController(TravelDbContext context, ILogger<TravelPlansController> logger)
+        public TravelPlansController(
+            TravelDbContext context,
+            ILogger<TravelPlansController> logger,
+            IHttpClientFactory httpClientFactory,
+            IConfiguration configuration)
         {
             _context = context;
             _logger = logger;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         private int GetCurrentUserId()
@@ -31,6 +39,41 @@ namespace TravelService.Controllers
         private string GetCurrentUserRole()
         {
             return User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
+        }
+
+        /// <summary>
+        /// Poziva FinanceService da obriše (soft delete) sve troškove vezane za dati putni plan.
+        /// Ovo je server-to-server poziv, zaštićen internim API ključem, ne prolazi kroz Gateway.
+        /// Greška u FinanceService ne sme da spreči brisanje samog plana - samo se loguje.
+        /// </summary>
+        private async Task DeleteExpensesInFinanceService(int travelPlanId)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("FinanceService");
+                var internalKey = _configuration["Internal:ApiKey"];
+                var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/internal/travel-plans/{travelPlanId}/expenses");
+                request.Headers.Add("X-Internal-Api-Key", internalKey);
+
+                var response = await client.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning(
+                        "FinanceService je vratio {StatusCode} pri cascade brisanju troškova za plan {PlanId}",
+                        response.StatusCode, travelPlanId);
+                }
+                else
+                {
+                    _logger.LogInformation("Cascade: FinanceService obrisao troškove za plan {PlanId}", travelPlanId);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Namerno ne bacamo dalje - FinanceService možda trenutno nije dostupan,
+                // ali brisanje putnog plana ne sme da propadne zbog toga.
+                _logger.LogError(ex, "Greška pri pozivanju FinanceService za cascade brisanje troškova plana {PlanId}", travelPlanId);
+            }
         }
 
         /// <summary>
@@ -354,7 +397,6 @@ namespace TravelService.Controllers
 
         /// <summary>
         /// Delete travel plan (soft delete) - Owner or Admin only
-      
         /// </summary>
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -411,6 +453,9 @@ namespace TravelService.Controllers
                 }
 
                 await _context.SaveChangesAsync();
+
+                // Cascade delete: obriši i troškove vezane za ovaj plan u FinanceService
+                await DeleteExpensesInFinanceService(id);
 
                 _logger.LogInformation($"User {currentUserId} deleted travel plan {id} (soft delete)");
 

@@ -95,6 +95,16 @@ namespace TravelService
 
                         builder.Services.AddAuthorization();
 
+                        // ---- HttpClient za komunikaciju sa FinanceService (cascade delete) ----
+                        builder.Services.AddHttpClient("FinanceService", client =>
+                        {
+                            var financeUrl = configuration["ServiceUrls:FinanceService"];
+                            if (!string.IsNullOrEmpty(financeUrl))
+                            {
+                                client.BaseAddress = new Uri(financeUrl);
+                            }
+                        });
+
                         // ---- CORS ----
                         builder.Services.AddCors(options =>
                         {
