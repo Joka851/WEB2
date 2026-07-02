@@ -53,9 +53,6 @@ namespace TravelService
                         // ---- Endpoint port ----
                         var endpoint = serviceContext.CodePackageActivationContext.GetEndpoint("ServiceEndpoint");
 
-                        File.AppendAllText(@"C:\SfDebug\travelservice.log",
-                            $"[{DateTime.Now}] Binding via ConfigureKestrel to port {endpoint.Port}\n");
-
                         builder.WebHost
                             .UseKestrel(options =>
                             {

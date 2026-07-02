@@ -42,10 +42,10 @@ namespace Gateway
                                     ValidateAudience = true,
                                     ValidateLifetime = true,
                                     ValidateIssuerSigningKey = true,
-                                    ValidIssuer = "TravelPlanner",
-                                    ValidAudience = "TravelPlannerUsers",
+                                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                                    ValidAudience = builder.Configuration["Jwt:Audience"],
                                     IssuerSigningKey = new SymmetricSecurityKey(
-                                        Encoding.UTF8.GetBytes("TravelPlannerSuperSecretKey123!@#"))
+                                        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
                                 };
                             });
 

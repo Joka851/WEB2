@@ -15,11 +15,13 @@ namespace FinanceService.Controllers
     {
         private readonly FinanceDbContext _context;
         private readonly ILogger<ExpensesController> _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public ExpensesController(FinanceDbContext context, ILogger<ExpensesController> logger)
+        public ExpensesController(FinanceDbContext context, ILogger<ExpensesController> logger, IHttpClientFactory httpClientFactory)
         {
             _context = context;
             _logger = logger;
+            _httpClientFactory = httpClientFactory;
         }
 
         private int GetCurrentUserId()
@@ -34,6 +36,36 @@ namespace FinanceService.Controllers
         }
 
         /// <summary>
+        /// Proverava da li ulogovani korisnik sme da pristupi datom putnom planu.
+        /// FinanceService nema sopstvenu evidenciju vlasništva nad planovima (to je u TravelDB),
+        /// pa prosleđuje isti Authorization (JWT) header ka TravelService i pита ga direktno:
+        /// GET /api/travel-plans/{id} tamo već proverava vlasnik/admin. 200 = ima pristup,
+        /// 403/404 = nema. Ako TravelService trenutno nije dostupan, iz bezbednosnih razloga
+        /// se pristup ODBIJA (fail-closed), a ne dozvoljava.
+        /// </summary>
+        private async Task<bool> CanAccessTravelPlan(int travelPlanId)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("TravelService");
+                var request = new HttpRequestMessage(HttpMethod.Get, $"/api/travel-plans/{travelPlanId}");
+
+                if (Request.Headers.TryGetValue("Authorization", out var authHeader))
+                {
+                    request.Headers.TryAddWithoutValidation("Authorization", authHeader.ToString());
+                }
+
+                var response = await client.SendAsync(request);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Greška pri proveri pristupa planu {PlanId} preko TravelService", travelPlanId);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Get all expenses for a travel plan
         /// </summary>
         [HttpGet]
@@ -41,7 +73,11 @@ namespace FinanceService.Controllers
         {
             try
             {
-               
+                if (!await CanAccessTravelPlan(travelPlanId))
+                {
+                    return Forbid();
+                }
+
                 var expenses = await _context.Expenses
                     .Where(e => e.TravelPlanId == travelPlanId && !e.IsDeleted)
                     .OrderByDescending(e => e.Date)
@@ -76,6 +112,11 @@ namespace FinanceService.Controllers
         {
             try
             {
+                if (!await CanAccessTravelPlan(travelPlanId))
+                {
+                    return Forbid();
+                }
+
                 var expense = await _context.Expenses
                     .FirstOrDefaultAsync(e => e.Id == id && e.TravelPlanId == travelPlanId && !e.IsDeleted);
 
@@ -112,6 +153,11 @@ namespace FinanceService.Controllers
         {
             try
             {
+                if (!await CanAccessTravelPlan(travelPlanId))
+                {
+                    return Forbid();
+                }
+
                 var expenses = await _context.Expenses
                     .Where(e => e.TravelPlanId == travelPlanId && !e.IsDeleted)
                     .ToListAsync();
@@ -152,6 +198,11 @@ namespace FinanceService.Controllers
         {
             try
             {
+                if (!await CanAccessTravelPlan(travelPlanId))
+                {
+                    return Forbid();
+                }
+
                 if (!Expense.IsValidCategory(category))
                 {
                     return BadRequest(new { message = "Nevažeća kategorija" });
@@ -190,6 +241,11 @@ namespace FinanceService.Controllers
         {
             try
             {
+                if (!await CanAccessTravelPlan(travelPlanId))
+                {
+                    return Forbid();
+                }
+
                 var expenses = await _context.Expenses
                     .Where(e => e.TravelPlanId == travelPlanId &&
                            e.Date >= startDate &&
@@ -229,6 +285,11 @@ namespace FinanceService.Controllers
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
+                }
+
+                if (!await CanAccessTravelPlan(travelPlanId))
+                {
+                    return Forbid();
                 }
 
                 // Validate category
@@ -288,6 +349,11 @@ namespace FinanceService.Controllers
         {
             try
             {
+                if (!await CanAccessTravelPlan(travelPlanId))
+                {
+                    return Forbid();
+                }
+
                 var expense = await _context.Expenses
                     .FirstOrDefaultAsync(e => e.Id == id && e.TravelPlanId == travelPlanId && !e.IsDeleted);
 
@@ -357,6 +423,11 @@ namespace FinanceService.Controllers
         {
             try
             {
+                if (!await CanAccessTravelPlan(travelPlanId))
+                {
+                    return Forbid();
+                }
+
                 var expense = await _context.Expenses
                     .FirstOrDefaultAsync(e => e.Id == id && e.TravelPlanId == travelPlanId && !e.IsDeleted);
 
