@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { shareService } from '../services/shareService';
+import { checklistService } from '../services/checklistService';
 import { useAuth } from '../context/AuthContext';
 import { TravelPlan } from '../models/TravelPlan';
 
@@ -42,6 +43,18 @@ const SharedPlanPage: React.FC = () => {
 
   const canEdit = accessType === 'EDIT' && !!user;
 
+  const handleToggleChecklist = async (itemId: number) => {
+    if (!planId || !token) return;
+    try {
+      await checklistService.toggle(planId, itemId, token);
+      // Osveži plan da prikaže novo stanje checklist stavke
+      const data = await shareService.accessByToken(token);
+      setPlan(data.travelPlan);
+    } catch {
+      setError('Failed to update checklist item.');
+    }
+  };
+
   return (
     <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
       <h2>{plan.name}</h2>
@@ -74,7 +87,7 @@ const SharedPlanPage: React.FC = () => {
                 <button
                   onClick={() =>
                     navigate(`/travel-plans/${planId}/destinations/${d.id}/edit`, {
-                      state: { returnTo: `/shared/${token}` }
+                      state: { returnTo: `/shared/${token}`, shareToken: token }
                     })
                   }
                 >
@@ -103,7 +116,7 @@ const SharedPlanPage: React.FC = () => {
                   <button
                     onClick={() =>
                       navigate(`/travel-plans/${planId}/activities/${a.id}/edit`, {
-                        state: { returnTo: `/shared/${token}` }
+                        state: { returnTo: `/shared/${token}`, shareToken: token }
                       })
                     }
                   >
@@ -121,7 +134,13 @@ const SharedPlanPage: React.FC = () => {
           <h3>Checklist</h3>
           {plan.checklistItems.map((item: any) => (
             <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <input type="checkbox" checked={item.isCompleted} readOnly />
+              <input
+                type="checkbox"
+                checked={item.isCompleted}
+                readOnly={!canEdit}
+                onChange={canEdit ? () => handleToggleChecklist(item.id) : undefined}
+                style={{ cursor: canEdit ? 'pointer' : 'default' }}
+              />
               <span style={{ textDecoration: item.isCompleted ? 'line-through' : 'none' }}>
                 {item.name}
               </span>

@@ -4,8 +4,11 @@ import { authService } from './authService';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
-const getHeaders = () => ({
-  headers: { Authorization: `Bearer ${authService.getToken()}` }
+const getHeaders = (shareToken?: string) => ({
+  headers: {
+    Authorization: `Bearer ${authService.getToken()}`,
+    ...(shareToken ? { 'X-Share-Token': shareToken } : {})
+  }
 });
 
 export const checklistService = {
@@ -17,28 +20,28 @@ export const checklistService = {
     return response.data;
   },
 
-  create: async (travelPlanId: number, data: CreateChecklistItem): Promise<ChecklistItem> => {
+  create: async (travelPlanId: number, data: CreateChecklistItem, shareToken?: string): Promise<ChecklistItem> => {
     const response = await axios.post(
       `${API_URL}/api/travel-plans/${travelPlanId}/checklists`,
       data,
-      getHeaders()
+      getHeaders(shareToken)
     );
     return response.data;
   },
 
-  toggle: async (travelPlanId: number, id: number): Promise<ChecklistItem> => {
+  toggle: async (travelPlanId: number, id: number, shareToken?: string): Promise<ChecklistItem> => {
     const response = await axios.put(
       `${API_URL}/api/travel-plans/${travelPlanId}/checklists/${id}/toggle`,
       {},
-      getHeaders()
+      getHeaders(shareToken)
     );
     return response.data;
   },
 
-  delete: async (travelPlanId: number, id: number): Promise<void> => {
+  delete: async (travelPlanId: number, id: number, shareToken?: string): Promise<void> => {
     await axios.delete(
       `${API_URL}/api/travel-plans/${travelPlanId}/checklists/${id}`,
-      getHeaders()
+      getHeaders(shareToken)
     );
   }
 };

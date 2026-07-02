@@ -9,7 +9,8 @@ const ActivityFormPage: React.FC = () => {
   const location = useLocation();
   const isEdit = !!id;
 
-  const returnTo = (location.state as { returnTo?: string } | null)?.returnTo;
+  const returnTo = (location.state as { returnTo?: string; shareToken?: string } | null)?.returnTo;
+  const shareToken = (location.state as { returnTo?: string; shareToken?: string } | null)?.shareToken;
   const goBack = () => navigate(returnTo || `/travel-plans/${planId}`);
 
   const [name, setName] = useState('');
@@ -26,7 +27,7 @@ const ActivityFormPage: React.FC = () => {
     if (isEdit) {
       const fetchActivity = async () => {
         try {
-          const activities = await activityService.getAll(parseInt(planId!));
+          const activities = await activityService.getAll(parseInt(planId!), shareToken);
           const act = activities.find(a => a.id === parseInt(id!));
           if (act) {
             setName(act.name);
@@ -55,9 +56,9 @@ const ActivityFormPage: React.FC = () => {
       };
 
       if (isEdit) {
-        await activityService.update(parseInt(planId!), parseInt(id!), data);
+        await activityService.update(parseInt(planId!), parseInt(id!), data, shareToken);
       } else {
-        await activityService.create(parseInt(planId!), data);
+        await activityService.create(parseInt(planId!), data, shareToken);
       }
       goBack();
     } catch {

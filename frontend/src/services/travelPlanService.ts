@@ -4,8 +4,11 @@ import { authService } from './authService';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
-const getHeaders = () => ({
-  headers: { Authorization: `Bearer ${authService.getToken()}` }
+const getHeaders = (shareToken?: string) => ({
+  headers: {
+    Authorization: `Bearer ${authService.getToken()}`,
+    ...(shareToken ? { 'X-Share-Token': shareToken } : {})
+  }
 });
 
 export const travelPlanService = {
@@ -35,8 +38,8 @@ export const travelPlanService = {
     return response.data;
   },
 
-  update: async (id: number, data: CreateTravelPlan): Promise<TravelPlan> => {
-    const response = await axios.put(`${API_URL}/api/travel-plans/${id}`, data, getHeaders());
+  update: async (id: number, data: CreateTravelPlan, shareToken?: string): Promise<TravelPlan> => {
+    const response = await axios.put(`${API_URL}/api/travel-plans/${id}`, data, getHeaders(shareToken));
     return response.data;
   },
 
