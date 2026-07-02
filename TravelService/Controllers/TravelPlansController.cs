@@ -42,6 +42,29 @@ namespace TravelService.Controllers
         }
 
         /// <summary>
+        /// Proverava da li zahtev nosi važeći EDIT share token (header X-Share-Token) za dati putni plan.
+        /// Koristi se da korisnik koji NIJE vlasnik ni admin, ali poseduje EDIT link, može da izmeni plan.
+        /// </summary>
+        private async Task<bool> HasValidEditShareToken(int travelPlanId)
+        {
+            if (!Request.Headers.TryGetValue("X-Share-Token", out var tokenValue))
+                return false;
+
+            var token = tokenValue.ToString();
+            if (string.IsNullOrWhiteSpace(token))
+                return false;
+
+            var shareToken = await _context.ShareTokens.FirstOrDefaultAsync(s =>
+                s.Token == token &&
+                s.TravelPlanId == travelPlanId &&
+                s.AccessType == ShareToken.ACCESS_TYPE_EDIT &&
+                s.IsActive &&
+                !s.IsDeleted);
+
+            return shareToken != null && !shareToken.IsExpired();
+        }
+
+        /// <summary>
         /// Poziva FinanceService da obriše (soft delete) sve troškove vezane za dati putni plan.
         /// Ovo je server-to-server poziv, zaštićen internim API ključem, ne prolazi kroz Gateway.
         /// Greška u FinanceService ne sme da spreči brisanje samog plana - samo se loguje.
@@ -331,8 +354,11 @@ namespace TravelService.Controllers
                     return NotFound(new { message = "Putni plan nije pronađen" });
                 }
 
-                // Check authorization: owner or admin
-                if (plan.UserId != currentUserId && currentRole != "Admin")
+                // Check authorization: owner, admin, or valid EDIT share token
+                var hasEditShareAccess = plan.UserId != currentUserId && currentRole != "Admin"
+                    && await HasValidEditShareToken(id);
+
+                if (plan.UserId != currentUserId && currentRole != "Admin" && !hasEditShareAccess)
                 {
                     _logger.LogWarning($"User {currentUserId} attempted unauthorized update to plan {id}");
                     return Forbid();

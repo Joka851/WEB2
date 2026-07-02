@@ -42,7 +42,34 @@ namespace TravelService.Controllers
                 return true;
 
             var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == travelPlanId && !p.IsDeleted);
-            return plan != null && plan.UserId == currentUserId;
+            if (plan != null && plan.UserId == currentUserId)
+                return true;
+
+            // Nije vlasnik ni admin - proveri da li poseduje važeći EDIT share token za ovaj plan.
+            // Korisnik i dalje mora biti ulogovan ([Authorize] na kontroleru to obezbeđuje).
+            return await HasValidEditShareToken(travelPlanId);
+        }
+
+        /// <summary>
+        /// Proverava da li zahtev nosi važeći EDIT share token (header X-Share-Token) za dati putni plan.
+        /// </summary>
+        private async Task<bool> HasValidEditShareToken(int travelPlanId)
+        {
+            if (!Request.Headers.TryGetValue("X-Share-Token", out var tokenValue))
+                return false;
+
+            var token = tokenValue.ToString();
+            if (string.IsNullOrWhiteSpace(token))
+                return false;
+
+            var shareToken = await _context.ShareTokens.FirstOrDefaultAsync(s =>
+                s.Token == token &&
+                s.TravelPlanId == travelPlanId &&
+                s.AccessType == ShareToken.ACCESS_TYPE_EDIT &&
+                s.IsActive &&
+                !s.IsDeleted);
+
+            return shareToken != null && !shareToken.IsExpired();
         }
 
         /// <summary>
