@@ -60,6 +60,9 @@ namespace TravelService.Controllers
         [HttpPost("generate")]
         public async Task<IActionResult> Generate(int travelPlanId, [FromBody] CreateShareTokenDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             if (!await CanAccessTravelPlan(travelPlanId))
                 return Forbid();
 

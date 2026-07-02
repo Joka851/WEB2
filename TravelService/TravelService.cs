@@ -14,6 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
+using QuestPDF.Infrastructure;
 using TravelService.Data;
 
 namespace TravelService
@@ -32,6 +33,10 @@ namespace TravelService
                     new KestrelCommunicationListener(serviceContext, "ServiceEndpoint", (url, listener) =>
                     {
                         ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
+
+                        // QuestPDF zahteva eksplicitno postavljanje licence pre generisanja bilo kog PDF-a.
+                        // Community licenca je besplatna za ovakve (nekomercijalne/edukativne) projekte.
+                        QuestPDF.Settings.License = LicenseType.Community;
 
                         var currentDirectory = Directory.GetCurrentDirectory();
 

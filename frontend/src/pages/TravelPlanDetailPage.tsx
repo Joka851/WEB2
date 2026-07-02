@@ -24,6 +24,7 @@ const TravelPlanDetailPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('destinations');
   const [loading, setLoading] = useState(true);
   const [newChecklistItem, setNewChecklistItem] = useState('');
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -86,6 +87,19 @@ const TravelPlanDetailPage: React.FC = () => {
     setExpenses(prev => prev.filter(e => e.id !== expId));
   };
 
+  const handleDownloadPdf = async () => {
+    if (!plan) return;
+    setDownloadingPdf(true);
+    try {
+      await travelPlanService.downloadPdf(planId, plan.name);
+    } catch (err) {
+      console.error('Error downloading PDF:', err);
+      alert('Failed to generate PDF report.');
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   const activitiesByDate = activities.reduce<Record<string, Activity[]>>((acc, a) => {
     const d = a.date?.split('T')[0];
     if (d) {
@@ -124,6 +138,9 @@ const TravelPlanDetailPage: React.FC = () => {
     <div style={{ padding: '20px' }}>
       <button onClick={() => navigate('/dashboard')}>← Back</button>
       <h2>{plan.name}</h2>
+      <button onClick={handleDownloadPdf} disabled={downloadingPdf} style={{ marginBottom: '10px' }}>
+        {downloadingPdf ? 'Generating PDF...' : '📄 Download PDF Report'}
+      </button>
       <p>{plan.description}</p>
       <p><strong>Period:</strong> {new Date(plan.startDate).toLocaleDateString()} - {new Date(plan.endDate).toLocaleDateString()}</p>
       <p>
