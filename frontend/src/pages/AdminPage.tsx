@@ -60,76 +60,81 @@ const AdminPage: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2>Admin Panel</h2>
+    <div className="page">
+      <div className="topbar">
         <div>
-          <button onClick={() => navigate('/dashboard')} style={{ marginRight: '10px' }}>Dashboard</button>
-          <button onClick={logout}>Logout</button>
+          <span className="eyebrow"> Admin</span>
+          <h2 style={{ margin: 0 }}>Admin Panel</h2>
+        </div>
+        <div className="topbar-actions">
+          <button className="btn btn-outline" onClick={() => navigate('/dashboard')}>Dashboard</button>
+          <button className="btn btn-outline" onClick={logout}>Logout</button>
         </div>
       </div>
 
-      <h3>Users</h3>
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <div className="route-divider"><span>Users</span></div>
+      {loading && <p style={{ color: 'var(--ink-soft)' }}>Loading...</p>}
+      {error && <div className="alert alert-error">{error}</div>}
 
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ backgroundColor: '#f0f0f0' }}>
-            <th style={{ padding: '10px', border: '1px solid #ccc' }}>ID</th>
-            <th style={{ padding: '10px', border: '1px solid #ccc' }}>Name</th>
-            <th style={{ padding: '10px', border: '1px solid #ccc' }}>Email</th>
-            <th style={{ padding: '10px', border: '1px solid #ccc' }}>Role</th>
-            <th style={{ padding: '10px', border: '1px solid #ccc' }}>Status</th>
-            <th style={{ padding: '10px', border: '1px solid #ccc' }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map(user => (
-            <tr key={user.id}>
-              <td style={{ padding: '10px', border: '1px solid #ccc' }}>{user.id}</td>
-              <td style={{ padding: '10px', border: '1px solid #ccc' }}>{user.firstName} {user.lastName}</td>
-              <td style={{ padding: '10px', border: '1px solid #ccc' }}>{user.email}</td>
-              <td style={{ padding: '10px', border: '1px solid #ccc' }}>
-                <select 
-                  value={user.role} 
-                  onChange={e => handleRoleChange(user.id, e.target.value)}
-                  disabled={user.id === currentUser?.id}
-                >
-                  <option value="User">User</option>
-                  <option value="Admin">Admin</option>
-                </select>
-              </td>
-              <td style={{ padding: '10px', border: '1px solid #ccc' }}>
-                <span style={{ color: user.isActive && !user.isDeleted ? 'green' : 'red' }}>
-                  {user.isDeleted ? 'Deleted' : (user.isActive ? 'Active' : 'Inactive')}
-                </span>
-              </td>
-              <td style={{ padding: '10px', border: '1px solid #ccc' }}>
-                {!user.isDeleted && (
-                  <button
-                    onClick={() => handleToggleActive(user.id, user.isActive)}
-                    style={{ 
-                      marginRight: '5px', 
-                      backgroundColor: user.isActive ? 'orange' : 'green', 
-                      color: 'white' 
-                    }}
-                  >
-                    {user.isActive ? 'Deactivate' : 'Activate'}
-                  </button>
-                )}
-                <button 
-                  onClick={() => handleDelete(user.id)} 
-                  style={{ color: 'red' }}
-                  disabled={user.id === currentUser?.id}
-                >
-                  Delete
-                </button>
-              </td>
+      <div style={{ overflowX: 'auto' }}>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {users.map(user => (
+              <tr key={user.id}>
+                <td>{user.id}</td>
+                <td>{user.firstName} {user.lastName}</td>
+                <td>{user.email}</td>
+                <td>
+                  <select
+                    className="select"
+                    value={user.role}
+                    onChange={e => handleRoleChange(user.id, e.target.value)}
+                    disabled={user.id === currentUser?.id}
+                    style={{ width: 'auto' }}
+                  >
+                    <option value="User">User</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </td>
+                <td>
+                  <span className={`badge ${user.isDeleted ? 'badge-danger' : (user.isActive ? 'badge-success' : 'badge-muted')}`}>
+                    {user.isDeleted ? 'Deleted' : (user.isActive ? 'Active' : 'Inactive')}
+                  </span>
+                </td>
+                <td>
+                  <div className="btn-row">
+                    {!user.isDeleted && (
+                      <button
+                        className={`btn btn-sm ${user.isActive ? 'btn-outline' : 'btn-success'}`}
+                        onClick={() => handleToggleActive(user.id, user.isActive)}
+                      >
+                        {user.isActive ? 'Deactivate' : 'Activate'}
+                      </button>
+                    )}
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleDelete(user.id)}
+                      disabled={user.id === currentUser?.id}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

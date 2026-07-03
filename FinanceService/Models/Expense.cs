@@ -44,26 +44,7 @@ namespace FinanceService.Models
         [Required]
         public bool IsDeleted { get; set; } = false;
 
-        // Validation
-        public bool IsValid()
-        {
-            var validCategories = new[]
-            {
-                CATEGORY_TRANSPORT,
-                CATEGORY_ACCOMMODATION,
-                CATEGORY_FOOD,
-                CATEGORY_ACTIVITIES,
-                CATEGORY_SHOPPING,
-                CATEGORY_INSURANCE,
-                CATEGORY_OTHER
-            };
-
-            return !string.IsNullOrWhiteSpace(Name) &&
-                   !string.IsNullOrWhiteSpace(Category) &&
-                   validCategories.Contains(Category) &&
-                   Amount >= 0 &&
-                   TravelPlanId > 0;
-        }
+        
 
         // Check if category is valid
         public static bool IsValidCategory(string category)

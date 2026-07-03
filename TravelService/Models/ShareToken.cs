@@ -38,15 +38,7 @@ namespace TravelService.Models
         [Required]
         public TravelPlan TravelPlan { get; set; } = null!;
 
-        // Check if token is still valid
-        public bool IsValid()
-        {
-            return IsActive &&
-                   !IsDeleted &&
-                   DateTime.UtcNow <= ExpiresAt &&
-                   !string.IsNullOrWhiteSpace(Token) &&
-                   (AccessType == ACCESS_TYPE_VIEW || AccessType == ACCESS_TYPE_EDIT);
-        }
+       
 
         // Check if token has expired
         public bool IsExpired()
@@ -54,11 +46,7 @@ namespace TravelService.Models
             return DateTime.UtcNow > ExpiresAt;
         }
 
-        // Check if access type is valid
-        public static bool IsValidAccessType(string accessType)
-        {
-            return accessType == ACCESS_TYPE_VIEW || accessType == ACCESS_TYPE_EDIT;
-        }
+       
 
         // Generate a secure token
         public static string GenerateToken()

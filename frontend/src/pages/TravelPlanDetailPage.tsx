@@ -126,35 +126,61 @@ const TravelPlanDetailPage: React.FC = () => {
     return dateStr >= plan.startDate.split('T')[0] && dateStr <= plan.endDate.split('T')[0];
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (!plan) return <p>Plan not found.</p>;
+  if (loading) return <div className="page"><p style={{ color: 'var(--ink-soft)' }}>Loading...</p></div>;
+  if (!plan) return <div className="page"><p>Plan not found.</p></div>;
 
   const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
   const remainingBudget = Number(plan.budget) - totalExpenses;
 
+  const tabLabels: Record<string, string> = {
+    destinations: ' Destinations',
+    activities: ' Activities',
+    calendar: ' Calendar',
+    expenses: ' Expenses',
+    checklist: ' Checklist',
+    share: ' Share'
+  };
   const tabs = ['destinations', 'activities', 'calendar', 'expenses', 'checklist', 'share'];
 
   return (
-    <div style={{ padding: '20px' }}>
-      <button onClick={() => navigate('/dashboard')}>← Back</button>
-      <h2>{plan.name}</h2>
-      <button onClick={handleDownloadPdf} disabled={downloadingPdf} style={{ marginBottom: '10px' }}>
-        {downloadingPdf ? 'Generating PDF...' : '📄 Download PDF Report'}
-      </button>
-      <p>{plan.description}</p>
-      <p><strong>Period:</strong> {new Date(plan.startDate).toLocaleDateString()} - {new Date(plan.endDate).toLocaleDateString()}</p>
-      <p>
-        <strong>Budget:</strong> ${Number(plan.budget).toFixed(2)} |{' '}
-        <strong>Spent:</strong> <span style={{ color: totalExpenses > Number(plan.budget) ? 'red' : 'inherit' }}>${totalExpenses.toFixed(2)}</span> |{' '}
-        <strong>Remaining:</strong> <span style={{ color: remainingBudget < 0 ? 'red' : 'green' }}>${remainingBudget.toFixed(2)}</span>
-      </p>
-      {plan.notes && <p>{plan.notes}</p>}
+    <div className="page">
+      <button className="btn btn-text" style={{ paddingLeft: 0 }} onClick={() => navigate('/dashboard')}>← Back</button>
 
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', marginTop: '20px' }}>
+      <div className="topbar" style={{ alignItems: 'flex-start' }}>
+        <div>
+          <span className="eyebrow"> Travel Plan</span>
+          <h2 style={{ margin: 0 }}>{plan.name}</h2>
+        </div>
+        <button className="btn btn-outline" onClick={handleDownloadPdf} disabled={downloadingPdf}>
+          {downloadingPdf ? 'Generating PDF...' : ' Download PDF Report'}
+        </button>
+      </div>
+
+      <div className="card">
+        <p style={{ marginBottom: '8px' }}>{plan.description}</p>
+        <p style={{ marginBottom: '8px' }}>
+          <strong>Period:</strong> {new Date(plan.startDate).toLocaleDateString()} - {new Date(plan.endDate).toLocaleDateString()}
+        </p>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <span className="badge badge-primary">Budget: ${Number(plan.budget).toFixed(2)}</span>
+          <span className={`badge ${totalExpenses > Number(plan.budget) ? 'badge-danger' : 'badge-muted'}`}>
+            Spent: ${totalExpenses.toFixed(2)}
+          </span>
+          <span className={`badge ${remainingBudget < 0 ? 'badge-danger' : 'badge-success'}`}>
+            Remaining: ${remainingBudget.toFixed(2)}
+          </span>
+        </div>
+        {plan.notes && <p style={{ marginTop: '10px', marginBottom: 0, color: 'var(--ink-soft)' }}>{plan.notes}</p>}
+      </div>
+
+      <div className="tabs">
         {tabs.map(tab => (
-          <button key={tab} onClick={() => setActiveTab(tab)}
-            style={{ padding: '8px 16px', backgroundColor: activeTab === tab ? '#007bff' : '#f0f0f0', color: activeTab === tab ? 'white' : 'black' }}>
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          <button
+            key={tab}
+            className={`tab ${activeTab === tab ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tabLabels[tab]}
           </button>
         ))}
       </div>
@@ -162,18 +188,22 @@ const TravelPlanDetailPage: React.FC = () => {
       {/* Destinations */}
       {activeTab === 'destinations' && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <h3>Destinations</h3>
-            <button onClick={() => navigate(`/travel-plans/${planId}/destinations/create`)}>Add Destination</button>
+          <div className="topbar" style={{ marginBottom: '14px' }}>
+            <h3 style={{ margin: 0 }}>Destinations</h3>
+            <button className="btn btn-accent btn-sm" onClick={() => navigate(`/travel-plans/${planId}/destinations/create`)}>+ Add Destination</button>
           </div>
-          {destinations.length === 0 && <p>No destinations yet.</p>}
+          {destinations.length === 0 && <div className="empty-state">No destinations yet.</div>}
           {destinations.map(d => (
-            <div key={d.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '8px' }}>
+            <div key={d.id} className="card">
               <h4>{d.name} — {d.location}</h4>
-              <p>{new Date(d.arrivalDate).toLocaleDateString()} - {new Date(d.departureDate).toLocaleDateString()}</p>
+              <p style={{ fontSize: '13px', color: 'var(--ink-soft)' }}>
+                {new Date(d.arrivalDate).toLocaleDateString()} - {new Date(d.departureDate).toLocaleDateString()}
+              </p>
               <p>{d.description}</p>
-              <button onClick={() => navigate(`/travel-plans/${planId}/destinations/${d.id}/edit`)}>Edit</button>
-              <button onClick={() => handleDeleteDestination(d.id)} style={{ marginLeft: '10px', color: 'red' }}>Delete</button>
+              <div className="btn-row">
+                <button className="btn btn-outline btn-sm" onClick={() => navigate(`/travel-plans/${planId}/destinations/${d.id}/edit`)}>Edit</button>
+                <button className="btn btn-danger btn-sm" onClick={() => handleDeleteDestination(d.id)}>Delete</button>
+              </div>
             </div>
           ))}
         </div>
@@ -182,19 +212,23 @@ const TravelPlanDetailPage: React.FC = () => {
       {/* Activities */}
       {activeTab === 'activities' && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <h3>Activities</h3>
-            <button onClick={() => navigate(`/travel-plans/${planId}/activities/create`)}>Add Activity</button>
+          <div className="topbar" style={{ marginBottom: '14px' }}>
+            <h3 style={{ margin: 0 }}>Activities</h3>
+            <button className="btn btn-accent btn-sm" onClick={() => navigate(`/travel-plans/${planId}/activities/create`)}>+ Add Activity</button>
           </div>
-          {activities.length === 0 && <p>No activities yet.</p>}
+          {activities.length === 0 && <div className="empty-state">No activities yet.</div>}
           {activities.map(a => (
-            <div key={a.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '8px' }}>
+            <div key={a.id} className="card">
               <h4>{a.name}</h4>
-              <p>{new Date(a.date).toLocaleDateString()} at {a.time} — {a.location}</p>
+              <p style={{ fontSize: '13px', color: 'var(--ink-soft)' }}>
+                {new Date(a.date).toLocaleDateString()} at {a.time} — {a.location}
+              </p>
               <p>{a.description}</p>
-              <p><strong>Cost:</strong> ${a.estimatedCost} | <strong>Status:</strong> {a.status}</p>
-              <button onClick={() => navigate(`/travel-plans/${planId}/activities/${a.id}/edit`)}>Edit</button>
-              <button onClick={() => handleDeleteActivity(a.id)} style={{ marginLeft: '10px', color: 'red' }}>Delete</button>
+              <p style={{ fontSize: '13px' }}><strong>Cost:</strong> ${a.estimatedCost} | <strong>Status:</strong> {a.status}</p>
+              <div className="btn-row">
+                <button className="btn btn-outline btn-sm" onClick={() => navigate(`/travel-plans/${planId}/activities/${a.id}/edit`)}>Edit</button>
+                <button className="btn btn-danger btn-sm" onClick={() => handleDeleteActivity(a.id)}>Delete</button>
+              </div>
             </div>
           ))}
         </div>
@@ -203,18 +237,17 @@ const TravelPlanDetailPage: React.FC = () => {
       {/* Calendar */}
       {activeTab === 'calendar' && (
         <div>
-          <h3>Calendar View</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '10px' }}>
-            <button onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1))}>‹</button>
-            <strong>{calendarMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</strong>
-            <button onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1))}>›</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '14px' }}>
+            <button className="btn btn-outline btn-icon-only" onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1))}>‹</button>
+            <strong style={{ fontFamily: "'Poppins', sans-serif" }}>{calendarMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</strong>
+            <button className="btn btn-outline btn-icon-only" onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1))}>›</button>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', marginBottom: '4px' }}>
+          <div className="calendar-grid" style={{ marginBottom: '6px' }}>
             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
-              <div key={d} style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '12px', color: '#666' }}>{d}</div>
+              <div key={d} style={{ textAlign: 'center', fontWeight: 600, fontSize: '12px', color: 'var(--ink-soft)' }}>{d}</div>
             ))}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+          <div className="calendar-grid">
             {getCalendarDays().map((dateStr, idx) => {
               if (!dateStr) return <div key={`blank-${idx}`} />;
               const dayActivities = activitiesByDate[dateStr] || [];
@@ -222,50 +255,56 @@ const TravelPlanDetailPage: React.FC = () => {
               const isSelected = selectedDate === dateStr;
               const dayNum = parseInt(dateStr.split('-')[2]);
               return (
-                <div key={dateStr} onClick={() => setSelectedDate(isSelected ? null : dateStr)}
-                  style={{ minHeight: '60px', padding: '4px', border: '1px solid #ddd', borderRadius: '6px',
-                    backgroundColor: isSelected ? '#007bff' : inPlan ? '#e8f4fd' : '#fafafa',
-                    cursor: 'pointer', color: isSelected ? 'white' : 'black' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 'bold' }}>{dayNum}</div>
+                <div
+                  key={dateStr}
+                  onClick={() => setSelectedDate(isSelected ? null : dateStr)}
+                  className={`calendar-cell ${isSelected ? 'calendar-cell-selected' : inPlan ? 'calendar-cell-inplan' : ''}`}
+                >
+                  <div style={{ fontSize: '12px', fontWeight: 700 }}>{dayNum}</div>
                   {dayActivities.slice(0, 2).map(a => (
-                    <div key={a.id} style={{ fontSize: '10px', backgroundColor: isSelected ? '#0056b3' : '#007bff',
-                      color: 'white', borderRadius: '3px', padding: '1px 3px', marginTop: '2px',
-                      overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                    <div key={a.id} style={{
+                      fontSize: '10px',
+                      backgroundColor: isSelected ? 'rgba(255,255,255,0.25)' : 'var(--primary)',
+                      color: '#fff', borderRadius: '4px', padding: '1px 4px', marginTop: '2px',
+                      overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis'
+                    }}>
                       {a.time ? a.time.slice(0, 5) + ' ' : ''}{a.name}
                     </div>
                   ))}
                   {dayActivities.length > 2 && (
-                    <div style={{ fontSize: '10px', color: isSelected ? '#cce' : '#888' }}>+{dayActivities.length - 2} more</div>
+                    <div style={{ fontSize: '10px', opacity: 0.8 }}>+{dayActivities.length - 2} more</div>
                   )}
                 </div>
               );
             })}
           </div>
           {selectedDate && (
-            <div style={{ marginTop: '20px', border: '1px solid #ccc', borderRadius: '8px', padding: '15px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="card" style={{ marginTop: '18px' }}>
+              <div className="topbar" style={{ marginBottom: '8px' }}>
                 <h4 style={{ margin: 0 }}>
                   {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
                 </h4>
-                <button onClick={() => navigate(`/travel-plans/${planId}/activities/create`)}>+ Add Activity</button>
+                <button className="btn btn-accent btn-sm" onClick={() => navigate(`/travel-plans/${planId}/activities/create`)}>+ Add Activity</button>
               </div>
               {(activitiesByDate[selectedDate] || []).length === 0 ? (
-                <p style={{ color: '#999' }}>No activities for this day.</p>
+                <p style={{ color: 'var(--ink-soft)' }}>No activities for this day.</p>
               ) : (
                 (activitiesByDate[selectedDate] || [])
                   .sort((a, b) => (a.time || '').localeCompare(b.time || ''))
                   .map(a => (
-                    <div key={a.id} style={{ border: '1px solid #eee', borderRadius: '6px', padding: '10px', marginTop: '10px' }}>
+                    <div key={a.id} style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '10px', marginTop: '10px' }}>
                       <strong>{a.name}</strong>
-                      <p style={{ margin: '4px 0', fontSize: '13px', color: '#555' }}>
-                        {a.time && `🕐 ${a.time}`} {a.location && `📍 ${a.location}`}
+                      <p style={{ margin: '4px 0', fontSize: '13px', color: 'var(--ink-soft)' }}>
+                        {a.time && ` ${a.time}`} {a.location && ` ${a.location}`}
                       </p>
                       {a.description && <p style={{ margin: '4px 0', fontSize: '13px' }}>{a.description}</p>}
                       <p style={{ margin: '4px 0', fontSize: '13px' }}>
                         <strong>Cost:</strong> ${a.estimatedCost} | <strong>Status:</strong> {a.status}
                       </p>
-                      <button onClick={() => navigate(`/travel-plans/${planId}/activities/${a.id}/edit`)}>Edit</button>
-                      <button onClick={() => handleDeleteActivity(a.id)} style={{ marginLeft: '10px', color: 'red' }}>Delete</button>
+                      <div className="btn-row">
+                        <button className="btn btn-outline btn-sm" onClick={() => navigate(`/travel-plans/${planId}/activities/${a.id}/edit`)}>Edit</button>
+                        <button className="btn btn-danger btn-sm" onClick={() => handleDeleteActivity(a.id)}>Delete</button>
+                      </div>
                     </div>
                   ))
               )}
@@ -277,23 +316,26 @@ const TravelPlanDetailPage: React.FC = () => {
       {/* Expenses */}
       {activeTab === 'expenses' && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <h3>Expenses</h3>
-            <button onClick={() => navigate(`/travel-plans/${planId}/expenses/create`)}>Add Expense</button>
+          <div className="topbar" style={{ marginBottom: '10px' }}>
+            <h3 style={{ margin: 0 }}>Expenses</h3>
+            <button className="btn btn-accent btn-sm" onClick={() => navigate(`/travel-plans/${planId}/expenses/create`)}>+ Add Expense</button>
           </div>
-          <p>
-            <strong>Total Spent:</strong> ${totalExpenses.toFixed(2)} / ${Number(plan.budget).toFixed(2)} |{' '}
-            <strong>Remaining:</strong>{' '}
-            <span style={{ color: remainingBudget < 0 ? 'red' : 'green' }}>${remainingBudget.toFixed(2)}</span>
+          <p style={{ marginBottom: '14px' }}>
+            <strong>Total Spent:</strong> ${totalExpenses.toFixed(2)} / ${Number(plan.budget).toFixed(2)} &nbsp;
+            <span className={`badge ${remainingBudget < 0 ? 'badge-danger' : 'badge-success'}`}>
+              Remaining: ${remainingBudget.toFixed(2)}
+            </span>
           </p>
-          {expenses.length === 0 && <p>No expenses yet.</p>}
+          {expenses.length === 0 && <div className="empty-state">No expenses yet.</div>}
           {expenses.map(e => (
-            <div key={e.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '8px' }}>
+            <div key={e.id} className="card">
               <h4>{e.name} — {e.category}</h4>
-              <p>${Number(e.amount).toFixed(2)} on {new Date(e.date).toLocaleDateString()}</p>
+              <p style={{ fontSize: '13px', color: 'var(--ink-soft)' }}>${Number(e.amount).toFixed(2)} on {new Date(e.date).toLocaleDateString()}</p>
               {e.description && <p>{e.description}</p>}
-              <button onClick={() => navigate(`/travel-plans/${planId}/expenses/${e.id}/edit`)}>Edit</button>
-              <button onClick={() => handleDeleteExpense(e.id)} style={{ marginLeft: '10px', color: 'red' }}>Delete</button>
+              <div className="btn-row">
+                <button className="btn btn-outline btn-sm" onClick={() => navigate(`/travel-plans/${planId}/expenses/${e.id}/edit`)}>Edit</button>
+                <button className="btn btn-danger btn-sm" onClick={() => handleDeleteExpense(e.id)}>Delete</button>
+              </div>
             </div>
           ))}
         </div>
@@ -303,26 +345,42 @@ const TravelPlanDetailPage: React.FC = () => {
       {activeTab === 'checklist' && (
         <div>
           <h3>Checklist</h3>
-          <form onSubmit={handleAddChecklistItem} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-            <input type="text" value={newChecklistItem} onChange={e => setNewChecklistItem(e.target.value)}
-              placeholder="Add new item..." style={{ flex: 1, padding: '8px' }} />
-            <button type="submit">Add</button>
+          <form onSubmit={handleAddChecklistItem} style={{ display: 'flex', gap: '10px', marginBottom: '18px' }}>
+            <input
+              type="text"
+              className="input"
+              value={newChecklistItem}
+              onChange={e => setNewChecklistItem(e.target.value)}
+              placeholder="Add new item..."
+            />
+            <button type="submit" className="btn btn-accent">Add</button>
           </form>
-          {checklist.length === 0 && <p>No checklist items yet.</p>}
-          {checklist.map(item => (
-            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-              <input type="checkbox" checked={item.isCompleted} onChange={() => handleToggleChecklist(item.id)} />
-              <span style={{ textDecoration: item.isCompleted ? 'line-through' : 'none' }}>{item.name}</span>
-              <button onClick={() => handleDeleteChecklistItem(item.id)} style={{ color: 'red' }}>Delete</button>
+          {checklist.length === 0 && <div className="empty-state">No checklist items yet.</div>}
+          {checklist.length > 0 && (
+            <div className="card">
+              {checklist.map(item => (
+                <div key={item.id} className="checkbox-row" style={{ marginBottom: '10px', justifyContent: 'space-between' }}>
+                  <div className="checkbox-row">
+                    <input type="checkbox" checked={item.isCompleted} onChange={() => handleToggleChecklist(item.id)} />
+                    <span style={{ textDecoration: item.isCompleted ? 'line-through' : 'none', color: item.isCompleted ? 'var(--ink-soft)' : 'var(--ink)' }}>
+                      {item.name}
+                    </span>
+                  </div>
+                  <button className="btn btn-text" style={{ color: 'var(--danger)' }} onClick={() => handleDeleteChecklistItem(item.id)}>Delete</button>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       )}
 
       {/* Share */}
       {activeTab === 'share' && (
         <div>
-          <button onClick={() => navigate(`/travel-plans/${planId}/share`)}>Manage Share Tokens</button>
+          <div className="empty-state">
+            <p style={{ marginBottom: '14px' }}>Generate a link or QR code so others can view or edit this plan.</p>
+            <button className="btn btn-primary" onClick={() => navigate(`/travel-plans/${planId}/share`)}>Manage Share Tokens</button>
+          </div>
         </div>
       )}
     </div>

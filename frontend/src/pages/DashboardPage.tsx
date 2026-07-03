@@ -49,39 +49,48 @@ const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2>Welcome, {user?.firstName}!</h2>
+    <div className="page">
+      <div className="topbar">
         <div>
+          <span className="eyebrow"> TravelPlanner</span>
+          <h2 style={{ margin: 0 }}>Welcome, {user?.firstName}!</h2>
+        </div>
+        <div className="topbar-actions">
           {isAdmin && (
-            <button onClick={() => navigate('/admin')} style={{ marginRight: '10px' }}>
+            <button className="btn btn-outline" onClick={() => navigate('/admin')}>
               Admin Panel
             </button>
           )}
-          <button onClick={() => navigate('/travel-plans/create')} style={{ marginRight: '10px' }}>
-            Create New Plan
+          <button className="btn btn-accent" onClick={() => navigate('/travel-plans/create')}>
+            + Create New Plan
           </button>
-          <button onClick={logout}>Logout</button>
+          <button className="btn btn-outline" onClick={logout}>Logout</button>
         </div>
       </div>
 
-      <h3>My Travel Plans</h3>
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {!loading && plans.length === 0 && <p>No travel plans found.</p>}
+      <div className="route-divider"><span>My Travel Plans</span></div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+      {loading && <p style={{ color: 'var(--ink-soft)' }}>Loading...</p>}
+      {error && <div className="alert alert-error">{error}</div>}
+      {!loading && plans.length === 0 && (
+        <div className="empty-state">
+          <p style={{ margin: 0 }}>No travel plans yet — start by creating your first one. 🗺️</p>
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
         {plans.map(plan => (
-          <div key={plan.id} style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px' }}>
+          <div key={plan.id} className="card card-hover card-accent-left">
             <h4>{plan.name}</h4>
-            <p>{plan.description}</p>
-            <p><strong>From:</strong> {new Date(plan.startDate).toLocaleDateString()}</p>
-            <p><strong>To:</strong> {new Date(plan.endDate).toLocaleDateString()}</p>
-            <p><strong>Budget:</strong> ${plan.budget}</p>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={() => navigate(`/travel-plans/${plan.id}`)}>View</button>
-              <button onClick={() => navigate(`/travel-plans/${plan.id}/edit`)}>Edit</button>
-              <button onClick={() => handleDelete(plan.id)} style={{ color: 'red' }}>Delete</button>
+            <p style={{ color: 'var(--ink-soft)', fontSize: '13px' }}>{plan.description}</p>
+            <p style={{ fontSize: '13px', margin: '4px 0' }}>
+              <strong>{new Date(plan.startDate).toLocaleDateString()}</strong> — <strong>{new Date(plan.endDate).toLocaleDateString()}</strong>
+            </p>
+            <span className="badge badge-primary">Budget: ${plan.budget}</span>
+            <div className="btn-row" style={{ marginTop: '14px' }}>
+              <button className="btn btn-primary btn-sm" onClick={() => navigate(`/travel-plans/${plan.id}`)}>View</button>
+              <button className="btn btn-outline btn-sm" onClick={() => navigate(`/travel-plans/${plan.id}/edit`)}>Edit</button>
+              <button className="btn btn-danger btn-sm" onClick={() => handleDelete(plan.id)}>Delete</button>
             </div>
           </div>
         ))}

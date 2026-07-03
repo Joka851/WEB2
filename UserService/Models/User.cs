@@ -40,14 +40,6 @@ namespace UserService.Models
         [Required]
         public bool IsDeleted { get; set; } = false;
 
-        // Validation
-        public bool IsValid()
-        {
-            return !string.IsNullOrWhiteSpace(FirstName) &&
-                   !string.IsNullOrWhiteSpace(LastName) &&
-                   !string.IsNullOrWhiteSpace(Email) &&
-                   !string.IsNullOrWhiteSpace(PasswordHash) &&
-                   (Role == "User" || Role == "Admin");
-        }
+       
     }
 }

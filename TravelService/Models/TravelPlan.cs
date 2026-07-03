@@ -44,14 +44,7 @@ namespace TravelService.Models
         public ICollection<ChecklistItem> ChecklistItems { get; set; } = new List<ChecklistItem>();
         public ICollection<ShareToken> ShareTokens { get; set; } = new List<ShareToken>();
 
-        // Validation
-        public bool IsValid()
-        {
-            return !string.IsNullOrWhiteSpace(Name) &&
-                   EndDate >= StartDate &&
-                   Budget >= 0 &&
-                   UserId > 0;
-        }
+       
 
         // Calculate total expenses from activities
         public decimal GetTotalEstimatedCosts()

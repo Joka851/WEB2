@@ -51,16 +51,7 @@ namespace TravelService.Models
         [Required]
         public TravelPlan TravelPlan { get; set; } = null!;
 
-        // Validation
-        public bool IsValid()
-        {
-            var validStatuses = new[] { STATUS_PLANNED, STATUS_RESERVED, STATUS_COMPLETED, STATUS_CANCELLED };
-            return !string.IsNullOrWhiteSpace(Name) &&
-                   !string.IsNullOrWhiteSpace(Status) &&
-                   validStatuses.Contains(Status) &&
-                   EstimatedCost >= 0 &&
-                   TravelPlanId > 0;
-        }
+       
 
         // Check if status is valid
         public static bool IsValidStatus(string status)

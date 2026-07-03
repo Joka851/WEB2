@@ -59,64 +59,74 @@ const SharePage: React.FC = () => {
   const getShareUrl = (token: string) => `${window.location.origin}/shared/${token}`;
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      <button onClick={() => navigate(`/travel-plans/${planId}`)}>← Back</button>
+    <div className="page" style={{ maxWidth: '760px' }}>
+      <button className="btn btn-text" style={{ paddingLeft: 0 }} onClick={() => navigate(`/travel-plans/${planId}`)}>← Back</button>
+      <span className="eyebrow"> Sharing</span>
       <h2>Share Travel Plan</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <div className="alert alert-error">{error}</div>}
 
-      <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
+      <div className="card">
         <h3>Generate New Share Link</h3>
-        
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Access Type</label>
+
+        <div className="field">
+          <label>Access Type</label>
           <select
+            className="select"
             value={accessType}
             onChange={(e) => setAccessType(e.target.value as 'VIEW' | 'EDIT')}
-            style={{ padding: '8px', width: '200px' }}
+            style={{ maxWidth: '240px' }}
           >
             <option value="VIEW">View Only</option>
             <option value="EDIT">Edit (requires login)</option>
           </select>
-          <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
-            {accessType === 'VIEW' 
+          <p style={{ fontSize: '12px', color: 'var(--ink-soft)', marginTop: '6px', marginBottom: 0 }}>
+            {accessType === 'VIEW'
               ? 'Anyone with the link can view the plan (no login required).'
               : 'User must be logged in to edit the plan.'}
           </p>
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Expires In (days)</label>
+        <div className="field">
+          <label>Expires In (days)</label>
           <input
             type="number"
+            className="input"
             value={expiresInDays}
             onChange={(e) => setExpiresInDays(parseInt(e.target.value) || 7)}
             min={1}
             max={365}
-            style={{ padding: '8px', width: '200px' }}
+            style={{ maxWidth: '240px' }}
           />
         </div>
 
-        <button onClick={handleCreate} style={{ padding: '10px 20px' }}>
+        <button className="btn btn-accent" onClick={handleCreate}>
           Generate Share Link
         </button>
       </div>
 
-      {loading && <p>Loading...</p>}
+      {loading && <p style={{ color: 'var(--ink-soft)' }}>Loading...</p>}
 
       {tokens.map(token => (
-        <div key={token.id} style={{ border: '1px solid #ccc', padding: '15px', marginBottom: '15px', borderRadius: '8px' }}>
-          <h4>Access Type: <span style={{ color: token.accessType === 'EDIT' ? 'orange' : 'green' }}>{token.accessType}</span></h4>
-          <p><strong>Expires:</strong> {new Date(token.expiresAt).toLocaleString()}</p>
-          <p><strong>Link:</strong> <a href={getShareUrl(token.token)} target="_blank" rel="noreferrer">{getShareUrl(token.token)}</a></p>
-          <div style={{ margin: '10px 0' }}>
+        <div key={token.id} className="card">
+          <span className={`badge ${token.accessType === 'EDIT' ? 'badge-accent' : 'badge-success'}`}>
+            {token.accessType}
+          </span>
+          <p style={{ marginTop: '10px' }}><strong>Expires:</strong> {new Date(token.expiresAt).toLocaleString()}</p>
+          <p style={{ wordBreak: 'break-all' }}>
+            <strong>Link:</strong>{' '}
+            <a href={getShareUrl(token.token)} target="_blank" rel="noreferrer">{getShareUrl(token.token)}</a>
+          </p>
+          <div className="qr-box" style={{ margin: '10px 0' }}>
             <QRCodeSVG value={getShareUrl(token.token)} size={128} />
           </div>
-          <button onClick={() => handleDelete(token.id)} style={{ color: 'red' }}>Delete</button>
+          <div>
+            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(token.id)}>Delete</button>
+          </div>
         </div>
       ))}
 
       {!loading && tokens.length === 0 && (
-        <p>No share links created yet. Generate one above.</p>
+        <div className="empty-state">No share links created yet. Generate one above.</div>
       )}
     </div>
   );

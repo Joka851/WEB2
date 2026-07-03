@@ -36,40 +36,43 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '100px auto', padding: '20px' }}>
-      <h2>Login</h2>
-      {searchParams.get('redirect') && (
-        <p style={{ color: '#856404', backgroundColor: '#fff3cd', padding: '10px', borderRadius: '6px' }}>
-          You need to log in to access this shared plan.
+    <div className="page-narrow">
+      <div className="auth-card">
+        <span className="eyebrow"> Welcome back</span>
+        <h2>Login</h2>
+        {searchParams.get('redirect') && (
+          <div className="alert alert-info">You need to log in to access this shared plan.</div>
+        )}
+        {error && <div className="alert alert-error">{error}</div>}
+        <form onSubmit={handleSubmit}>
+          <div className="field">
+            <label>Email</label>
+            <input
+              type="email"
+              className="input"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="field">
+            <label>Password</label>
+            <input
+              type="password"
+              className="input"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', justifyContent: 'center' }}>
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+        <p style={{ marginTop: '16px', marginBottom: 0, fontSize: '14px', color: 'var(--ink-soft)' }}>
+          Don't have an account? <Link to="/register">Register</Link>
         </p>
-      )}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-        <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px' }}>
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
-      <p>Don't have an account? <Link to="/register">Register</Link></p>
+      </div>
     </div>
   );
 };

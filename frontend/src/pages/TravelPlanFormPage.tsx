@@ -78,49 +78,47 @@ const TravelPlanFormPage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '600px', margin: '50px auto', padding: '20px' }}>
-      <h2>{isEdit ? 'Edit Travel Plan' : 'Create Travel Plan'}</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Name:</label>
-          <input type="text" value={name} onChange={e => setName(e.target.value)}
-            required style={{ width: '100%', padding: '8px' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Description:</label>
-          <textarea value={description} onChange={e => setDescription(e.target.value)}
-            style={{ width: '100%', padding: '8px' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Start Date:</label>
-          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
-            required style={{ width: '100%', padding: '8px' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>End Date:</label>
-          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
-            required style={{ width: '100%', padding: '8px' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Budget ($):</label>
-          <input type="number" value={budget} onChange={e => setBudget(parseFloat(e.target.value))}
-            min="0" required style={{ width: '100%', padding: '8px' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Notes:</label>
-          <textarea value={notes} onChange={e => setNotes(e.target.value)}
-            style={{ width: '100%', padding: '8px' }} />
-        </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button type="submit" disabled={loading} style={{ padding: '10px 20px' }}>
-            {loading ? 'Saving...' : isEdit ? 'Update' : 'Create'}
-          </button>
-          <button type="button" onClick={() => navigate('/dashboard')} style={{ padding: '10px 20px' }}>
-            Cancel
-          </button>
-        </div>
-      </form>
+    <div className="page-narrow">
+      <div className="card">
+        <span className="eyebrow"> {isEdit ? 'Editing' : 'New adventure'}</span>
+        <h2>{isEdit ? 'Edit Travel Plan' : 'Create Travel Plan'}</h2>
+        {error && <div className="alert alert-error">{error}</div>}
+        <form onSubmit={handleSubmit}>
+          <div className="field">
+            <label>Name</label>
+            <input type="text" className="input" value={name} onChange={e => setName(e.target.value)} required />
+          </div>
+          <div className="field">
+            <label>Description</label>
+            <textarea className="textarea" value={description} onChange={e => setDescription(e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Start Date</label>
+            <input type="date" className="input" value={startDate} onChange={e => setStartDate(e.target.value)} required />
+          </div>
+          <div className="field">
+            <label>End Date</label>
+            <input type="date" className="input" value={endDate} onChange={e => setEndDate(e.target.value)} required />
+          </div>
+          <div className="field">
+            <label>Budget ($)</label>
+            <input type="number" className="input" value={budget}
+              onChange={e => setBudget(parseFloat(e.target.value))} min="0" required />
+          </div>
+          <div className="field">
+            <label>Notes</label>
+            <textarea className="textarea" value={notes} onChange={e => setNotes(e.target.value)} />
+          </div>
+          <div className="btn-row">
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? 'Saving...' : isEdit ? 'Update' : 'Create'}
+            </button>
+            <button type="button" className="btn btn-outline" onClick={() => navigate('/dashboard')}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

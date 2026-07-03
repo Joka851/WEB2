@@ -37,9 +37,9 @@ const SharedPlanPage: React.FC = () => {
     fetchPlan();
   }, [token, user, navigate]);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p style={{ color: 'red' }}>{error}</p>;
-  if (!plan) return <p>Plan not found.</p>;
+  if (loading) return <div className="page"><p style={{ color: 'var(--ink-soft)' }}>Loading...</p></div>;
+  if (error) return <div className="page"><div className="alert alert-error">{error}</div></div>;
+  if (!plan) return <div className="page"><p>Plan not found.</p></div>;
 
   const canEdit = accessType === 'EDIT' && !!user;
 
@@ -56,10 +56,11 @@ const SharedPlanPage: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+    <div className="page" style={{ maxWidth: '760px' }}>
+      <span className="eyebrow"> Shared plan</span>
       <h2>{plan.name}</h2>
-      <p><strong>Access Type:</strong> <span style={{ color: canEdit ? 'orange' : 'green' }}>{accessType}</span></p>
-      <p>{plan.description}</p>
+      <span className={`badge ${canEdit ? 'badge-accent' : 'badge-success'}`}>{accessType}</span>
+      <p style={{ marginTop: '12px' }}>{plan.description}</p>
       <p>
         <strong>Period:</strong>{' '}
         {new Date(plan.startDate).toLocaleDateString()} -{' '}
@@ -69,7 +70,7 @@ const SharedPlanPage: React.FC = () => {
       {plan.notes && <p>{plan.notes}</p>}
 
       {canEdit && (
-        <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#fff3cd', borderRadius: '8px' }}>
+        <div className="alert alert-info">
           <strong>Edit mode:</strong> You can edit this plan.
         </div>
       )}
@@ -77,14 +78,17 @@ const SharedPlanPage: React.FC = () => {
       {/* Destinations */}
       {plan.destinations && plan.destinations.length > 0 && (
         <div>
-          <h3>Destinations</h3>
+          <div className="route-divider"><span>Destinations</span></div>
           {plan.destinations.map((d: any) => (
-            <div key={d.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '8px' }}>
+            <div key={d.id} className="card">
               <h4>{d.name} — {d.location}</h4>
-              <p>{new Date(d.arrivalDate).toLocaleDateString()} - {new Date(d.departureDate).toLocaleDateString()}</p>
+              <p style={{ fontSize: '13px', color: 'var(--ink-soft)' }}>
+                {new Date(d.arrivalDate).toLocaleDateString()} - {new Date(d.departureDate).toLocaleDateString()}
+              </p>
               {d.description && <p>{d.description}</p>}
               {canEdit && (
                 <button
+                  className="btn btn-outline btn-sm"
                   onClick={() =>
                     navigate(`/travel-plans/${planId}/destinations/${d.id}/edit`, {
                       state: { returnTo: `/shared/${token}`, shareToken: token }
@@ -102,18 +106,21 @@ const SharedPlanPage: React.FC = () => {
       {/* Activities */}
       {plan.activities && plan.activities.length > 0 && (
         <div>
-          <h3>Activities</h3>
+          <div className="route-divider"><span>Activities</span></div>
           {plan.activities
             .slice()
             .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
             .map((a: any) => (
-              <div key={a.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '8px' }}>
+              <div key={a.id} className="card">
                 <h4>{a.name}</h4>
-                <p>{new Date(a.date).toLocaleDateString()} {a.time && `at ${a.time}`} {a.location && `— ${a.location}`}</p>
+                <p style={{ fontSize: '13px', color: 'var(--ink-soft)' }}>
+                  {new Date(a.date).toLocaleDateString()} {a.time && `at ${a.time}`} {a.location && `— ${a.location}`}
+                </p>
                 {a.description && <p>{a.description}</p>}
-                <p><strong>Cost:</strong> ${a.estimatedCost} | <strong>Status:</strong> {a.status}</p>
+                <p style={{ fontSize: '13px' }}><strong>Cost:</strong> ${a.estimatedCost} | <strong>Status:</strong> {a.status}</p>
                 {canEdit && (
                   <button
+                    className="btn btn-outline btn-sm"
                     onClick={() =>
                       navigate(`/travel-plans/${planId}/activities/${a.id}/edit`, {
                         state: { returnTo: `/shared/${token}`, shareToken: token }
@@ -131,21 +138,23 @@ const SharedPlanPage: React.FC = () => {
       {/* Checklist */}
       {plan.checklistItems && plan.checklistItems.length > 0 && (
         <div>
-          <h3>Checklist</h3>
-          {plan.checklistItems.map((item: any) => (
-            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <input
-                type="checkbox"
-                checked={item.isCompleted}
-                readOnly={!canEdit}
-                onChange={canEdit ? () => handleToggleChecklist(item.id) : undefined}
-                style={{ cursor: canEdit ? 'pointer' : 'default' }}
-              />
-              <span style={{ textDecoration: item.isCompleted ? 'line-through' : 'none' }}>
-                {item.name}
-              </span>
-            </div>
-          ))}
+          <div className="route-divider"><span>Checklist</span></div>
+          <div className="card">
+            {plan.checklistItems.map((item: any) => (
+              <div key={item.id} className="checkbox-row" style={{ marginBottom: '10px' }}>
+                <input
+                  type="checkbox"
+                  checked={item.isCompleted}
+                  readOnly={!canEdit}
+                  onChange={canEdit ? () => handleToggleChecklist(item.id) : undefined}
+                  style={{ cursor: canEdit ? 'pointer' : 'default' }}
+                />
+                <span style={{ textDecoration: item.isCompleted ? 'line-through' : 'none', color: item.isCompleted ? 'var(--ink-soft)' : 'var(--ink)' }}>
+                  {item.name}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

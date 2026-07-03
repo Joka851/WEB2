@@ -65,10 +65,5 @@ namespace FinanceService.DTOs
         public decimal BudgetUtilization { get; set; } // Percentage
     }
 
-    public class ExpenseByDateDto
-    {
-        public DateTime Date { get; set; }
-        public decimal Total { get; set; }
-        public List<ExpenseDto> Expenses { get; set; } = new();
-    }
+  
 }

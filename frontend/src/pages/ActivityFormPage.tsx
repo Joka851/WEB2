@@ -44,7 +44,7 @@ const ActivityFormPage: React.FC = () => {
       };
       fetchActivity();
     }
-  }, [id, planId, isEdit]);
+  }, [id, planId, isEdit, shareToken]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,58 +69,54 @@ const ActivityFormPage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '600px', margin: '50px auto', padding: '20px' }}>
-      <h2>{isEdit ? 'Edit Activity' : 'Add Activity'}</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Name:</label>
-          <input type="text" value={name} onChange={e => setName(e.target.value)}
-            required style={{ width: '100%', padding: '8px' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Date:</label>
-          <input type="date" value={date} onChange={e => setDate(e.target.value)}
-            required style={{ width: '100%', padding: '8px' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Time:</label>
-          <input type="time" value={time} onChange={e => setTime(e.target.value)}
-            style={{ width: '100%', padding: '8px' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Location:</label>
-          <input type="text" value={location_} onChange={e => setLocation(e.target.value)}
-            style={{ width: '100%', padding: '8px' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Description:</label>
-          <textarea value={description} onChange={e => setDescription(e.target.value)}
-            style={{ width: '100%', padding: '8px' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Estimated Cost ($):</label>
-          <input type="number" value={estimatedCost}
-            onChange={e => setEstimatedCost(parseFloat(e.target.value))}
-            min="0" style={{ width: '100%', padding: '8px' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Status:</label>
-          <select value={status} onChange={e => setStatus(e.target.value)}
-            style={{ width: '100%', padding: '8px' }}>
-            <option value="Planned">Planned</option>
-            <option value="Reserved">Reserved</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-        </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button type="submit" disabled={loading} style={{ padding: '10px 20px' }}>
-            {loading ? 'Saving...' : isEdit ? 'Update' : 'Add'}
-          </button>
-          <button type="button" onClick={goBack} style={{ padding: '10px 20px' }}>Cancel</button>
-        </div>
-      </form>
+    <div className="page-narrow">
+      <div className="card">
+        <span className="eyebrow">📅 Activity</span>
+        <h2>{isEdit ? 'Edit Activity' : 'Add Activity'}</h2>
+        {error && <div className="alert alert-error">{error}</div>}
+        <form onSubmit={handleSubmit}>
+          <div className="field">
+            <label>Name</label>
+            <input type="text" className="input" value={name} onChange={e => setName(e.target.value)} required />
+          </div>
+          <div className="field">
+            <label>Date</label>
+            <input type="date" className="input" value={date} onChange={e => setDate(e.target.value)} required />
+          </div>
+          <div className="field">
+            <label>Time</label>
+            <input type="time" className="input" value={time} onChange={e => setTime(e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Location</label>
+            <input type="text" className="input" value={location_} onChange={e => setLocation(e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Description</label>
+            <textarea className="textarea" value={description} onChange={e => setDescription(e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Estimated Cost ($)</label>
+            <input type="number" className="input" value={estimatedCost}
+              onChange={e => setEstimatedCost(parseFloat(e.target.value))} min="0" />
+          </div>
+          <div className="field">
+            <label>Status</label>
+            <select className="select" value={status} onChange={e => setStatus(e.target.value)}>
+              <option value="Planned">Planned</option>
+              <option value="Reserved">Reserved</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div className="btn-row">
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? 'Saving...' : isEdit ? 'Update' : 'Add'}
+            </button>
+            <button type="button" className="btn btn-outline" onClick={goBack}>Cancel</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

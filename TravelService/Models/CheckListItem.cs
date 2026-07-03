@@ -29,10 +29,6 @@ namespace TravelService.Models
         [Required]
         public TravelPlan TravelPlan { get; set; } = null!;
 
-        // Validation
-        public bool IsValid()
-        {
-            return !string.IsNullOrWhiteSpace(Name) && TravelPlanId > 0;
-        }
+     
     }
 }
