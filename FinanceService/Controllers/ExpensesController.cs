@@ -35,14 +35,7 @@ namespace FinanceService.Controllers
             return User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
         }
 
-        /// <summary>
-        /// Proverava da li ulogovani korisnik sme da pristupi datom putnom planu.
-        /// FinanceService nema sopstvenu evidenciju vlasništva nad planovima (to je u TravelDB),
-        /// pa prosleđuje isti Authorization (JWT) header ka TravelService i pита ga direktno:
-        /// GET /api/travel-plans/{id} tamo već proverava vlasnik/admin. 200 = ima pristup,
-        /// 403/404 = nema. Ako TravelService trenutno nije dostupan, iz bezbednosnih razloga
-        /// se pristup ODBIJA (fail-closed), a ne dozvoljava.
-        /// </summary>
+        
         private async Task<bool> CanAccessTravelPlan(int travelPlanId)
         {
             try

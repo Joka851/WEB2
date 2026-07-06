@@ -19,7 +19,6 @@ const LoginPage: React.FC = () => {
       await login({ email, password });
       const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
       
-      // Provjeri da li postoji redirect parametar u URL-u
       const redirect = searchParams.get('redirect');
       if (redirect) {
         navigate(redirect);

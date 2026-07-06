@@ -29,7 +29,7 @@ const RegisterPage: React.FC = () => {
   return (
     <div className="page-narrow">
       <div className="auth-card">
-        <span className="eyebrow">🧳 Get started</span>
+        <span className="eyebrow"> Get started</span>
         <h2>Create an account</h2>
         {error && <div className="alert alert-error">{error}</div>}
         <form onSubmit={handleSubmit}>

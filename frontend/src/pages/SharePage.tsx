@@ -37,8 +37,7 @@ const SharePage: React.FC = () => {
         expiresAt: expiresAt.toISOString()
       });
 
-      // Refetch full token list - the create endpoint returns a different
-      // shape (ShareTokenResponseDto) than the list endpoint (ShareTokenDto)
+      
       const data = await shareService.getTokens(parseInt(planId!));
       setTokens(data);
       setError('');

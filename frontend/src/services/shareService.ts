@@ -26,7 +26,7 @@ export const shareService = {
     return response.data;
   },
 
-  // Public endpoint - no auth required for VIEW access
+  
   accessByToken: async (token: string): Promise<any> => {
     const response = await axios.get(
       `${API_URL}/api/share/access/${token}`

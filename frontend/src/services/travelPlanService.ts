@@ -27,7 +27,7 @@ export const travelPlanService = {
     return response.data;
   },
 
-  // Ovo ostaje SAMO ZA ADMINA (ne koristi se u DashboardPage za obične korisnike)
+  // Ovo ostaje SAMO ZA ADMINA 
   getByUser: async (userId: number): Promise<TravelPlan[]> => {
     const response = await axios.get(`${API_URL}/api/travel-plans/user/${userId}`, getHeaders());
     return response.data;

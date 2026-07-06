@@ -7,10 +7,10 @@ namespace TravelService.Controllers
 {
     [Route("api/share")]
     [ApiController]
-    public class SharePublicController : ControllerBase
+    public class ShareController : ControllerBase
     {
         private readonly TravelDbContext _context;
-        public SharePublicController(TravelDbContext context)
+        public ShareController(TravelDbContext context)
         {
             _context = context;
         }

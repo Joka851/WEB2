@@ -74,7 +74,7 @@ const DashboardPage: React.FC = () => {
       {error && <div className="alert alert-error">{error}</div>}
       {!loading && plans.length === 0 && (
         <div className="empty-state">
-          <p style={{ margin: 0 }}>No travel plans yet — start by creating your first one. 🗺️</p>
+          <p style={{ margin: 0 }}>No travel plans yet — start by creating your first one. </p>
         </div>
       )}
 
