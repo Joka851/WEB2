@@ -41,10 +41,7 @@ namespace TravelService.Controllers
             return User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
         }
 
-        /// <summary>
-        /// Proverava da li zahtev nosi važeći EDIT share token (header X-Share-Token) za dati putni plan.
-        /// Koristi se da korisnik koji NIJE vlasnik ni admin, ali poseduje EDIT link, može da izmeni plan.
-        /// </summary>
+       
         private async Task<bool> HasValidEditShareToken(int travelPlanId)
         {
             if (!Request.Headers.TryGetValue("X-Share-Token", out var tokenValue))
@@ -64,11 +61,7 @@ namespace TravelService.Controllers
             return shareToken != null && !shareToken.IsExpired();
         }
 
-        /// <summary>
-        /// Poziva FinanceService da obriše (soft delete) sve troškove vezane za dati putni plan.
-        /// Ovo je server-to-server poziv, zaštićen internim API ključem, ne prolazi kroz Gateway.
-        /// Greška u FinanceService ne sme da spreči brisanje samog plana - samo se loguje.
-        /// </summary>
+       
         private async Task DeleteExpensesInFinanceService(int travelPlanId)
         {
             try
@@ -99,9 +92,7 @@ namespace TravelService.Controllers
             }
         }
 
-        /// <summary>
-        /// Get all travel plans - User sees only their own, Admin sees all
-        /// </summary>
+      
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -112,7 +103,6 @@ namespace TravelService.Controllers
 
                 IQueryable<TravelPlan> query = _context.TravelPlans.Where(t => !t.IsDeleted);
 
-                // If not Admin, only show user's own plans
                 if (currentRole != "Admin")
                 {
                     query = query.Where(t => t.UserId == currentUserId);
@@ -143,9 +133,7 @@ namespace TravelService.Controllers
             }
         }
 
-        /// <summary>
-        /// Get all travel plans for the currently logged-in user
-        /// </summary>
+       
         [HttpGet("my-plans")]
         public async Task<IActionResult> GetMyPlans()
         {
@@ -179,9 +167,6 @@ namespace TravelService.Controllers
             }
         }
 
-        /// <summary>
-        /// Get travel plan by ID with details
-        /// </summary>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -201,7 +186,6 @@ namespace TravelService.Controllers
                     return NotFound(new { message = "Putni plan nije pronađen" });
                 }
 
-                // Check authorization: owner or admin
                 if (plan.UserId != currentUserId && currentRole != "Admin")
                 {
                     _logger.LogWarning($"User {currentUserId} attempted unauthorized access to plan {id}");
@@ -236,9 +220,7 @@ namespace TravelService.Controllers
             }
         }
 
-        /// <summary>
-        /// Get all travel plans for a specific user - Admin only
-        /// </summary>
+        
         [HttpGet("user/{userId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetByUser(int userId)
@@ -271,9 +253,7 @@ namespace TravelService.Controllers
             }
         }
 
-        /// <summary>
-        /// Create a new travel plan
-        /// </summary>
+       
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateTravelPlanDto dto)
         {
@@ -337,9 +317,7 @@ namespace TravelService.Controllers
             }
         }
 
-        /// <summary>
-        /// Update travel plan - Owner or Admin only
-        /// </summary>
+       
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateTravelPlanDto dto)
         {
@@ -421,9 +399,7 @@ namespace TravelService.Controllers
             }
         }
 
-        /// <summary>
-        /// Delete travel plan (soft delete) - Owner or Admin only
-        /// </summary>
+       
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -480,7 +456,6 @@ namespace TravelService.Controllers
 
                 await _context.SaveChangesAsync();
 
-                // Cascade delete: obriši i troškove vezane za ovaj plan u FinanceService
                 await DeleteExpensesInFinanceService(id);
 
                 _logger.LogInformation($"User {currentUserId} deleted travel plan {id} (soft delete)");

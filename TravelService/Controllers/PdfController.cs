@@ -38,9 +38,7 @@ namespace TravelService.Controllers
             return User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
         }
 
-        /// <summary>
-        /// Lagani DTO za deserijalizaciju odgovora sa FinanceService-a (samo polja koja PDF-u trebaju).
-        /// </summary>
+       
         private class RemoteExpenseDto
         {
             public int Id { get; set; }
@@ -50,11 +48,7 @@ namespace TravelService.Controllers
             public DateTime Date { get; set; }
         }
 
-        /// <summary>
-        /// Pokušava da preuzme stvarne troškove sa FinanceService-a, prosleđujući isti JWT
-        /// kojim je korisnik pozvao ovaj endpoint. Ako FinanceService nije dostupan ili vrati
-        /// grešku, PDF se i dalje generiše - samo bez sekcije stvarnih troškova (fail-soft).
-        /// </summary>
+       
         private async Task<List<RemoteExpenseDto>> TryGetExpenses(int travelPlanId)
         {
             try
@@ -92,10 +86,6 @@ namespace TravelService.Controllers
             return string.IsNullOrWhiteSpace(cleaned) ? "PutniPlan" : cleaned.Replace(' ', '_');
         }
 
-        /// <summary>
-        /// Generiše i vraća PDF izveštaj sa pregledom putnog plana: osnovni podaci, destinacije,
-        /// aktivnosti, checklist i troškovi (procenjeni iz aktivnosti + stvarni iz FinanceService-a).
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetPdf(int travelPlanId)
         {

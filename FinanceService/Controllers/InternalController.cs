@@ -5,11 +5,7 @@ using FinanceService.Data;
 
 namespace FinanceService.Controllers
 {
-    /// <summary>
-    /// Interni endpoint-i koje pozivaju drugi mikroservisi direktno (server-to-server),
-    /// ne prolaze kroz Gateway i ne koriste JWT autentikaciju korisnika.
-    /// Zaštićeni su deljenim internim API ključem koji poznaju samo servisi u sistemu.
-    /// </summary>
+    
     [ApiController]
     [Route("api/internal/travel-plans")]
     [AllowAnonymous]
@@ -35,10 +31,7 @@ namespace FinanceService.Controllers
             return !string.IsNullOrEmpty(expectedKey) && providedKey == expectedKey;
         }
 
-        /// <summary>
-        /// Briše (soft delete) sve troškove vezane za jedan putni plan.
-        /// Poziva ga TravelService kada korisnik ili admin obriše putni plan (cascade delete).
-        /// </summary>
+       
         [HttpDelete("{travelPlanId}/expenses")]
         public async Task<IActionResult> DeleteExpensesForPlan(int travelPlanId)
         {

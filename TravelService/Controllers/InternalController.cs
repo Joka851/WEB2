@@ -5,11 +5,7 @@ using TravelService.Data;
 
 namespace TravelService.Controllers
 {
-    /// <summary>
-    /// Interni endpoint-i koje pozivaju drugi mikroservisi direktno (server-to-server),
-    /// ne prolaze kroz Gateway i ne koriste JWT autentikaciju korisnika.
-    /// Zaštićeni su deljenim internim API ključem koji poznaju samo servisi u sistemu.
-    /// </summary>
+    
     [ApiController]
     [Route("api/internal/users")]
     [AllowAnonymous]
@@ -65,12 +61,7 @@ namespace TravelService.Controllers
             }
         }
 
-        /// <summary>
-        /// Briše (soft delete) sve putne planove datog korisnika, zajedno sa svim povezanim
-        /// entitetima (destinacije, aktivnosti, checklist, share tokeni), i za svaki plan
-        /// dalje kaskadno poziva FinanceService da obriše troškove.
-        /// Poziva ga UserService kada admin obriše korisnika (cascade delete).
-        /// </summary>
+        
         [HttpDelete("{userId}/travel-plans")]
         public async Task<IActionResult> DeletePlansForUser(int userId)
         {

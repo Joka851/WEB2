@@ -73,7 +73,7 @@ const DestinationFormPage: React.FC = () => {
   return (
     <div className="page-narrow">
       <div className="card">
-        <span className="eyebrow">📍 Destination</span>
+        <span className="eyebrow"> Destination</span>
         <h2>{isEdit ? 'Edit Destination' : 'Add Destination'}</h2>
         {error && <div className="alert alert-error">{error}</div>}
         <form onSubmit={handleSubmit}>

@@ -21,9 +21,7 @@ namespace UserService.Controllers
             _logger = logger;
         }
 
-        /// <summary>
-        /// Register a new user
-        /// </summary>
+       
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
@@ -60,9 +58,7 @@ namespace UserService.Controllers
             }
         }
 
-        /// <summary>
-        /// Login user and return JWT token
-        /// </summary>
+       
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {

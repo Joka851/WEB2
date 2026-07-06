@@ -25,7 +25,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/shared/:token" element={<SharedPlanPage />} />
 
-          {/* Zaštićene rute - zahtevaju ulogovanog korisnika (bilo koje uloge) */}
+          {/* Zaštićene rute - zahtevaju ulogovanog korisnika  */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/travel-plans/create" element={<TravelPlanFormPage />} />

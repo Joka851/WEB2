@@ -45,8 +45,7 @@ namespace TravelService.Controllers
             if (plan != null && plan.UserId == currentUserId)
                 return true;
 
-            // Nije vlasnik ni admin - proveri da li poseduje važeći EDIT share token za ovaj plan.
-            // Korisnik i dalje mora biti ulogovan ([Authorize] na kontroleru to obezbeđuje).
+            
             return await HasValidEditShareToken(travelPlanId);
         }
 
